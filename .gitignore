@@ -1,0 +1,60 @@
+# ==========================================
+# Environment Variables & Secrets (CRITICAL)
+# ==========================================
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.cert
+
+# ==========================================
+# Common Dependencies & Builds
+# ==========================================
+node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+
+# ==========================================
+# Frontend / Vite Specific
+# ==========================================
+*.tsbuildinfo
+.vite/
+
+# ==========================================
+# Backend & Runtimes (Node / Python / Go / Java)
+# ==========================================
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Go / Java / Rust binaries
+bin/
+target/
+*.exe
+*.so
+*.dylib
+
+# ==========================================
+# Database & Logs
+# ==========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+logs/
+*.sqlite
+*.db
+
+# ==========================================
+# OS & IDE Metadata
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
