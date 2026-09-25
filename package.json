@@ -1,0 +1,17 @@
+{
+    "name": "neforum-monorepo",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend"
+    ],
+    "scripts": {
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "dev:backend": "npm run dev --workspace=backend",
+        "dev:frontend": "npm run dev --workspace=frontend"
+    },
+    "devDependencies": {
+        "prettier": "^3.9.9"
+    }
+}
