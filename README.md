@@ -12,25 +12,25 @@ Unlike traditional social media platforms that focus heavily on profiles, follow
 
 ## 📌 Table of Contents
 
-* [About the Project](#-about-the-project)
-* [Why NEForum?](#-why-neforum)
-* [Core Features](#-core-features)
-* [How Anonymity Works](#-how-anonymity-works)
-* [User Roles](#-user-roles)
-* [Main User Flow](#-main-user-flow)
-* [Technology Stack](#-technology-stack)
-* [Project Structure](#-project-structure)
-* [Authentication](#-authentication)
-* [Database](#-database)
-* [API Overview](#-api-overview)
-* [Security](#-security)
-* [Installation](#-installation)
-* [Environment Variables](#-environment-variables)
-* [Running the Project](#-running-the-project)
-* [Future Features](#-future-features)
-* [Project Goals](#-project-goals)
-* [Contributing](#-contributing)
-* [Disclaimer](#-disclaimer)
+- [About the Project](#-about-the-project)
+- [Why NEForum?](#-why-neforum)
+- [Core Features](#-core-features)
+- [How Anonymity Works](#-how-anonymity-works)
+- [User Roles](#-user-roles)
+- [Main User Flow](#-main-user-flow)
+- [Technology Stack](#-technology-stack)
+- [Project Structure](#-project-structure)
+- [Authentication](#-authentication)
+- [Database](#-database)
+- [API Overview](#-api-overview)
+- [Security](#-security)
+- [Installation](#-installation)
+- [Environment Variables](#-environment-variables)
+- [Running the Project](#-running-the-project)
+- [Future Features](#-future-features)
+- [Project Goals](#-project-goals)
+- [Contributing](#-contributing)
+- [Disclaimer](#-disclaimer)
 
 ---
 
@@ -44,17 +44,17 @@ The platform is designed around the idea that users should be able to discuss to
 
 Possible discussions can include:
 
-* 🇳🇵 Nepal-related topics
-* 🎓 Education and university life
-* 💼 Jobs and careers
-* 💻 Technology
-* 🎮 Gaming
-* 🎬 Movies and entertainment
-* ❤️ Relationships
-* 🧠 Life experiences
-* 😂 Memes and casual discussions
-* ❓ Questions and advice
-* 🗣️ Opinions and general discussions
+- 🇳🇵 Nepal-related topics
+- 🎓 Education and university life
+- 💼 Jobs and careers
+- 💻 Technology
+- 🎮 Gaming
+- 🎬 Movies and entertainment
+- ❤️ Relationships
+- 🧠 Life experiences
+- 😂 Memes and casual discussions
+- ❓ Questions and advice
+- 🗣️ Opinions and general discussions
 
 The platform can eventually support both English and Nepali content, allowing users to communicate in the language they are most comfortable with.
 
@@ -66,14 +66,14 @@ Many existing social platforms encourage users to build public identities around
 
 That can make some people uncomfortable when discussing:
 
-* Personal experiences
-* Relationship problems
-* Academic struggles
-* Workplace issues
-* Financial difficulties
-* Social issues
-* Sensitive questions
-* Opinions they don't want associated with their real identity
+- Personal experiences
+- Relationship problems
+- Academic struggles
+- Workplace issues
+- Financial difficulties
+- Social issues
+- Sensitive questions
+- Opinions they don't want associated with their real identity
 
 NEForum takes a different approach.
 
@@ -95,8 +95,8 @@ The project is therefore designed around **anonymous participation rather than p
 
 Users can create an account with:
 
-* Username
-* Password
+- Username
+- Password
 
 No real name is required.
 
@@ -110,16 +110,16 @@ NEForum uses token-based authentication.
 
 The system supports:
 
-* User registration
-* User login
-* Access tokens
-* Refresh tokens
-* Secure HTTP-only cookies
-* Password hashing
-* Protected routes
-* Logout
-* Token expiration
-* Account blocking
+- User registration
+- User login
+- Access tokens
+- Refresh tokens
+- Secure HTTP-only cookies
+- Password hashing
+- Protected routes
+- Logout
+- Token expiration
+- Account blocking
 
 The authentication system is designed so that passwords are never stored as plain text.
 
@@ -131,11 +131,11 @@ Authenticated users can create anonymous posts.
 
 A post may contain:
 
-* Title
-* Content
-* Category
-* Creation date
-* Author reference internally
+- Title
+- Content
+- Category
+- Creation date
+- Author reference internally
 
 The author's internal database identity is not intended to be exposed publicly as a real identity.
 
@@ -163,10 +163,10 @@ NEForum can maintain a user's post viewing history.
 
 This can eventually be used for:
 
-* Recently viewed posts
-* Continue reading
-* Personalized recommendations
-* Better browsing experience
+- Recently viewed posts
+- Continue reading
+- Personalized recommendations
+- Better browsing experience
 
 ---
 
@@ -186,12 +186,12 @@ Although the platform focuses on anonymity, anonymity does not mean there are no
 
 Administrative moderation can be used to handle:
 
-* Spam
-* Harassment
-* Illegal content
-* Malicious activity
-* Abusive behavior
-* Repeated rule violations
+- Spam
+- Harassment
+- Illegal content
+- Malicious activity
+- Abusive behavior
+- Repeated rule violations
 
 ---
 
@@ -201,11 +201,11 @@ NEForum separates **account authentication** from **public identity**.
 
 A user still needs an account so that the system can:
 
-* Authenticate them
-* Prevent unauthorized posting
-* Manage their posts
-* Track actions internally
-* Apply moderation rules
+- Authenticate them
+- Prevent unauthorized posting
+- Manage their posts
+- Track actions internally
+- Apply moderation rules
 
 However, the public interface does not need to expose personal information.
 
@@ -248,15 +248,15 @@ NEForum can use three main levels of access.
 
 Normal users can:
 
-* Register
-* Login
-* Logout
-* Create posts
-* Read posts
-* Comment
-* React
-* Manage their own content
-* View their history
+- Register
+- Login
+- Logout
+- Create posts
+- Read posts
+- Comment
+- React
+- Manage their own content
+- View their history
 
 ---
 
@@ -264,14 +264,14 @@ Normal users can:
 
 Administrators can have additional permissions such as:
 
-* View users
-* Block users
-* Unblock users
-* Remove inappropriate posts
-* Remove comments
-* Manage reported content
-* Manage categories
-* Monitor platform activity
+- View users
+- Block users
+- Unblock users
+- Remove inappropriate posts
+- Remove comments
+- Manage reported content
+- Manage categories
+- Monitor platform activity
 
 Administrative functionality should be separated from normal user functionality.
 
@@ -308,36 +308,36 @@ Administrative functionality should be separated from normal user functionality.
 
 ## Frontend
 
-* **React**
-* **React Router DOM**
-* **Tailwind CSS**
-* JavaScript
-* Fetch API / Axios depending on implementation
+- **React**
+- **React Router DOM**
+- **Tailwind CSS**
+- JavaScript
+- Fetch API / Axios depending on implementation
 
 ## Backend
 
-* **Node.js**
-* **Express.js**
-* JavaScript / ES Modules
+- **Node.js**
+- **Express.js**
+- JavaScript / ES Modules
 
 ## Database
 
-* **MongoDB**
-* **Mongoose**
+- **MongoDB**
+- **Mongoose**
 
 ## Authentication & Security
 
-* **JSON Web Tokens (JWT)**
-* **bcrypt**
-* HTTP-only cookies
+- **JSON Web Tokens (JWT)**
+- **bcrypt**
+- HTTP-only cookies
 
 ## Development Tools
 
-* Git
-* GitHub
-* Postman
-* Nodemon
-* VS Code / Cursor
+- Git
+- GitHub
+- Postman
+- Nodemon
+- VS Code / Cursor
 
 ---
 
@@ -551,7 +551,7 @@ This prevents normal frontend JavaScript from directly reading the refresh token
 In production:
 
 ```js
-secure: true
+secure: true;
 ```
 
 allows the cookie to be transmitted only over HTTPS.
@@ -563,7 +563,7 @@ allows the cookie to be transmitted only over HTTPS.
 The refresh cookie uses:
 
 ```js
-sameSite: "strict"
+sameSite: 'strict';
 ```
 
 to restrict cross-site cookie transmission.
@@ -689,16 +689,16 @@ Recommended authentication testing sequence:
 
 Important edge cases should also be tested:
 
-* Missing username
-* Missing password
-* Invalid password
-* Duplicate username
-* Non-existent user
-* Blocked user
-* Expired access token
-* Expired refresh token
-* Invalid refresh token
-* Missing refresh cookie
+- Missing username
+- Missing password
+- Invalid password
+- Duplicate username
+- Non-existent user
+- Blocked user
+- Expired access token
+- Expired refresh token
+- Invalid refresh token
+- Missing refresh cookie
 
 ---
 
@@ -712,8 +712,8 @@ Potential future features include:
 
 A bilingual interface supporting:
 
-* English
-* नेपाली
+- English
+- नेपाली
 
 This could make the platform more accessible to Nepali users.
 
@@ -743,11 +743,11 @@ Confessions
 
 Users could search posts by:
 
-* Keywords
-* Categories
-* Tags
-* Recent posts
-* Popular posts
+- Keywords
+- Categories
+- Tags
+- Recent posts
+- Popular posts
 
 ---
 
@@ -761,9 +761,9 @@ A trending system could highlight discussions receiving high levels of activity.
 
 Users could report:
 
-* Posts
-* Comments
-* Accounts
+- Posts
+- Comments
+- Accounts
 
 Reports could then be reviewed by moderators.
 
@@ -779,10 +779,10 @@ Users could participate in long-form conversations while maintaining the forum's
 
 Possible notifications:
 
-* Someone replied to your post
-* Someone replied to your comment
-* Your post was reported
-* Your account status changed
+- Someone replied to your post
+- Someone replied to your comment
+- Your post was reported
+- Your account status changed
 
 Notifications should avoid revealing unnecessary personal information.
 
@@ -872,11 +872,11 @@ Make your changes, test them, and create a pull request.
 
 Before submitting a contribution, make sure that:
 
-* Existing functionality is not unnecessarily broken.
-* Sensitive information is not committed.
-* Authentication and authorization are handled correctly.
-* New API endpoints are tested.
-* Code follows the project's existing structure.
+- Existing functionality is not unnecessarily broken.
+- Sensitive information is not committed.
+- Authentication and authorization are handled correctly.
+- New API endpoints are tested.
+- Code follows the project's existing structure.
 
 ---
 

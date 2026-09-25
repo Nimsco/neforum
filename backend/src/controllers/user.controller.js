@@ -126,4 +126,52 @@ const loginUser = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser };
+const logoutUser = async (req, res) => {
+    try {
+        const { refreshToken } = req.cookies;
+
+        if (!refreshToken) {
+            throw new ApiError(
+                400,
+                'Refresh token is required'
+            );
+        }
+
+        const user = await User.findOne({ refreshToken });
+
+        if (!user) {
+            throw new ApiError(404, 'User not found');
+        }
+
+        user.refreshToken = null;
+        await user.save({ validateBeforeSave: false });
+
+        return res
+            .status(200)
+            .clearCookie('refreshToken', {
+                httpOnly: true,
+                secure:
+                    process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+            })
+            .json(
+                new ApiResponse(
+                    200,
+                    null,
+                    'User logged out successfully'
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || 'Internal Server Error'
+        );
+    }
+};
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    getCurrentUser,
+};
