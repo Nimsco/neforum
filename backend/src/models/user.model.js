@@ -1,48 +1,56 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      minlength: 3,
-      maxlength: 50,
-      trim: true,
-      index: true,
-    },
+    {
+        username: {
+            type: String,
+            required: true,
+            unique: true,
+            minlength: 3,
+            maxlength: 50,
+            trim: true,
+            index: true,
+        },
 
-    email: {
-      type: String,
-      required: false,
-      unique: true,
-      sparse: true,
-      trim: true,
-      lowercase: true,
-      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email"],
-    },
+        password: {
+            type: String,
+            required: true,
+            minlength: 6,
+        },
 
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-    },
+        isBlocked: {
+            type: Boolean,
+            default: false,
+        },
 
-    isBlocked: {
-      type: Boolean,
-      default: false,
+        refreshToken: {
+            type: String,
+            default: null,
+        },
     },
-
-    refreshToken: {
-      type: String,
-      default: null,
-    },
-  },
-  {
-    timestamps: true,
-  },
+    {
+        timestamps: true,
+    }
 );
 
-const User = mongoose.model("User", userSchema);
+userSchema.pre('save', async function (next) {
+    if (this.isModified('password')) {
+        const bcrypt = await import('bcryptjs');
+        this.password = await bcrypt.hash(
+            this.password,
+            10
+        );
+    }
+    next();
+});
+
+userSchema.methods.comparePassword = async function (
+    candidatePassword
+) {
+    const bcrypt = await import('bcryptjs');
+    return bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
 
 export default User;
