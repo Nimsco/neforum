@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: null,
         },
+        recoveryKey: {
+            type: String,
+            required: true,
+            trim: true,
+        },
     },
     {
         timestamps: true,
@@ -38,6 +43,17 @@ userSchema.pre('save', async function (next) {
         const bcrypt = await import('bcryptjs');
         this.password = await bcrypt.hash(
             this.password,
+            10
+        );
+    }
+    next();
+});
+
+userSchema.pre('save', async function (next) {
+    if (this.isModified('recoveryKey')) {
+        const bcrypt = await import('bcryptjs');
+        this.recoveryKey = await bcrypt.hash(
+            this.recoveryKey,
             10
         );
     }
