@@ -1,1 +1,373 @@
 @import 'tailwindcss';
+
+/*
+ * ─── neforum Design Tokens (Tailwind v4 @theme) ────────────────────
+ *
+ * Usage philosophy:
+ *   Blue = accent only (actions, links, active nav, reactions, badges)
+ *   White / Slate = dominant surface & text colours
+ */
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+    --color-background: #f8fafc;
+    --color-card: #ffffff;
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-light: #dbeafe;
+    --color-dark: #0f172a;
+    --color-foreground: #1e293b;
+    --color-muted: #64748b;
+    --color-border: #e2e8f0;
+    --color-error: #ef4444;
+    --color-error-light: #fef2f2;
+    --color-success: #22c55e;
+    --color-success-light: #f0fdf4;
+}
+
+.dark {
+    --color-background: #0f172a;
+    --color-card: #1e293b;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-primary-light: #1e3a5f;
+    --color-foreground: #f8fafc;
+    --color-muted: #94a3b8;
+    --color-border: #334155;
+    --color-error: #f87171;
+    --color-error-light: #450a0a;
+    --color-success: #4ade80;
+    --color-success-light: #052e16;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    overflow-x: hidden;
+}
+
+/* ─── Animated background ────────────────────────────────────────── */
+
+/* Gentle float for speech bubbles, silhouettes, dots */
+@keyframes drift {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-18px) translateX(8px) rotate(2deg);
+    }
+    50% {
+        transform: translateY(-6px) translateX(-6px) rotate(-1deg);
+    }
+    75% {
+        transform: translateY(-22px) translateX(4px) rotate(1.5deg);
+    }
+    100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+}
+
+@keyframes drift-slow {
+    0% {
+        transform: translateY(0) translateX(0) scale(1);
+    }
+    33% {
+        transform: translateY(-12px) translateX(10px) scale(1.02);
+    }
+    66% {
+        transform: translateY(-24px) translateX(-8px) scale(0.98);
+    }
+    100% {
+        transform: translateY(0) translateX(0) scale(1);
+    }
+}
+
+/* Hood character omnidirectional traversal (drifts across screen in multiple directions) */
+@keyframes hood-traverse {
+    /* ── Path 1: Enters Bottom-Left -> Ascends Diagonally to Top-Right ── */
+    0% {
+        transform: translate(-15vw, 85vh) rotate(15deg);
+        opacity: 0;
+    }
+    2% {
+        opacity: 0.85;
+    }
+    8% {
+        transform: translate(25vw, 60vh) rotate(-6deg);
+    }
+    16% {
+        transform: translate(70vw, 32vh) rotate(8deg);
+    }
+    22% {
+        opacity: 0.85;
+    }
+    24% {
+        transform: translate(115vw, 10vh) rotate(4deg);
+        opacity: 0;
+    }
+
+    /* ── Path 2: Enters Top-Right -> Descends Diagonally to Bottom-Left ── */
+    25% {
+        transform: translate(110vw, 15vh) rotate(-18deg);
+        opacity: 0;
+    }
+    27% {
+        opacity: 0.85;
+    }
+    34% {
+        transform: translate(70vw, 45vh) rotate(10deg);
+    }
+    43% {
+        transform: translate(25vw, 75vh) rotate(-10deg);
+    }
+    47% {
+        opacity: 0.85;
+    }
+    49% {
+        transform: translate(-15vw, 92vh) rotate(-16deg);
+        opacity: 0;
+    }
+
+    /* ── Path 3: Enters Top-Center -> Descends Steeper to Bottom-Right ── */
+    50% {
+        transform: translate(35vw, -15vh) rotate(6deg);
+        opacity: 0;
+    }
+    52% {
+        opacity: 0.85;
+    }
+    60% {
+        transform: translate(55vw, 42vh) rotate(-8deg);
+    }
+    69% {
+        transform: translate(75vw, 78vh) rotate(12deg);
+    }
+    72% {
+        opacity: 0.85;
+    }
+    74% {
+        transform: translate(95vw, 115vh) rotate(5deg);
+        opacity: 0;
+    }
+
+    /* ── Path 4: Enters Bottom-Right -> Ascends Steeper to Top-Left ── */
+    75% {
+        transform: translate(80vw, 115vh) rotate(-16deg);
+        opacity: 0;
+    }
+    77% {
+        opacity: 0.85;
+    }
+    85% {
+        transform: translate(50vw, 55vh) rotate(8deg);
+    }
+    93% {
+        transform: translate(20vw, 20vh) rotate(-6deg);
+    }
+    96% {
+        opacity: 0.85;
+    }
+    99% {
+        transform: translate(-15vw, -12vh) rotate(-4deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-15vw, 85vh) rotate(15deg);
+        opacity: 0;
+    }
+}
+
+/* Pulse for dots */
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.35;
+        transform: scale(1.3);
+    }
+}
+
+/* ─── Form animations ────────────────────────────────────────────── */
+
+/* Page enter */
+@keyframes slide-up-fade {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-down-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Validation message */
+@keyframes reveal {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 40px;
+    }
+}
+
+/* Button press */
+@keyframes press {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.97);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Logo hover wobble */
+@keyframes wobble {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-3deg);
+    }
+    75% {
+        transform: rotate(3deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+/* Typing cursor blink for the tagline */
+@keyframes blink-caret {
+    0%,
+    100% {
+        border-color: transparent;
+    }
+    50% {
+        border-color: var(--color-primary);
+    }
+}
+
+/* Subtle focus ring expand */
+@keyframes focus-ring {
+    from {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.3);
+    }
+    to {
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+}
+
+/* ─── Utility classes for animations ─────────────────────────────── */
+.animate-drift {
+    animation: drift var(--drift-duration, 8s) ease-in-out infinite;
+    animation-delay: var(--drift-delay, 0s);
+}
+
+.animate-drift-slow {
+    animation: drift-slow var(--drift-duration, 12s) ease-in-out infinite;
+    animation-delay: var(--drift-delay, 0s);
+}
+
+.animate-hood {
+    animation: hood-traverse 45s linear infinite;
+}
+
+.animate-pulse-dot {
+    animation: pulse-soft var(--pulse-duration, 4s) ease-in-out infinite;
+    animation-delay: var(--pulse-delay, 0s);
+}
+
+.animate-slide-up {
+    animation: slide-up-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+    animation: slide-down-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-reveal {
+    animation: reveal 0.3s ease-out forwards;
+}
+
+/* ─── Input focus micro-interaction ──────────────────────────────── */
+.input-focus-effect {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease,
+        background-color 0.25s ease;
+}
+
+.input-focus-effect:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background-color: var(--color-card);
+}
+
+/* ─── Button interactions ────────────────────────────────────────── */
+.btn-primary {
+    transition: background-color 0.2s ease, transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:active {
+    animation: press 0.2s ease;
+}
+
+/* ─── Logo interaction ───────────────────────────────────────────── */
+.logo-hover:hover {
+    animation: wobble 0.5s ease;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 999px;
+}
