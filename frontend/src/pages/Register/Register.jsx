@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
     User,
     Lock,
@@ -8,29 +8,75 @@ import {
     ArrowRight,
 } from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../../api/auth.api';
+import getErrorMessage from '../../utils/getErrorMessage';
+import userContext from '../../context/userContext';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { setUser } = useContext(userContext);
+
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        username : "",
-        password : "",
-        confirmPassword : ""
+        username: '',
+        password: '',
+        confirmPassword: '',
+    });
 
-    })
+    const handleChange = (e) => {
+        const { name, value } = e.target;
 
-    const handleChange = (e) =>{
-        const {name,value} = e.target
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
 
-        setFormData((prevData) =>({
-            ...prevData,[name]:value
-        }))
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const { username, password, confirmPassword } =
+            formData;
 
-    const handleSubmit = () =>{
+        if (password != confirmPassword) {
+            toast.error('Passwords do not match.');
+            return;
+        }
 
-    }
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+
+        try {
+            const data = await registerUser({
+                username: username.trim(),
+                password,
+                confirmPassword,
+            });
+
+            setUser({ username });
+
+            toast.success(
+                data.message ||
+                    'User Registered Successfully.'
+            );
+
+            navigate('/');
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error || 'Registration Failed.'
+                )
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <AuthLayout>
@@ -45,7 +91,10 @@ const Register = () => {
             </div>
 
             {/* Form */}
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form
+                className="space-y-4"
+                onSubmit={handleSubmit}
+            >
                 {/* Username */}
                 <div>
                     <label
@@ -72,7 +121,8 @@ const Register = () => {
                         />
                     </div>
                     <p className="mt-1 text-[11px] text-muted/70">
-                        3–50 characters · this is your public identity
+                        3–50 characters · this is your
+                        public identity
                     </p>
                 </div>
 
@@ -91,7 +141,11 @@ const Register = () => {
                         <input
                             id="password"
                             name="password"
-                            type={showPassword ? 'text' : 'password'}
+                            type={
+                                showPassword
+                                    ? 'text'
+                                    : 'password'
+                            }
                             value={formData.password}
                             onChange={handleChange}
                             autoComplete="new-password"
@@ -138,7 +192,11 @@ const Register = () => {
                         <input
                             id="confirmPassword"
                             name="confirmPassword"
-                            type={showConfirm ? 'text' : 'password'}
+                            type={
+                                showConfirm
+                                    ? 'text'
+                                    : 'password'
+                            }
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             autoComplete="new-password"
@@ -172,8 +230,13 @@ const Register = () => {
                     type="submit"
                     className="btn-primary group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                 >
-                    Create Account
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    {isSubmitting
+                        ? 'Creating Account...'
+                        : 'Create Account'}
+
+                    {!isSubmitting && (
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    )}
                 </button>
             </form>
         </AuthLayout>

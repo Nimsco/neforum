@@ -1,4 +1,10 @@
-import { MessageCircle, User, Hash, AtSign, Eye } from 'lucide-react';
+import {
+    MessageCircle,
+    User,
+    Hash,
+    AtSign,
+    Eye,
+} from 'lucide-react';
 
 /**
  * AnimatedBackground
@@ -118,8 +124,20 @@ const HoodCharacter = ({ className = '' }) => (
             opacity="0.15"
         />
         {/* Eyes - just two small glowing dots */}
-        <circle cx="26" cy="32" r="2" fill="currentColor" opacity="0.7" />
-        <circle cx="38" cy="32" r="2" fill="currentColor" opacity="0.7" />
+        <circle
+            cx="26"
+            cy="32"
+            r="2"
+            fill="currentColor"
+            opacity="0.7"
+        />
+        <circle
+            cx="38"
+            cy="32"
+            r="2"
+            fill="currentColor"
+            opacity="0.7"
+        />
         {/* Shoulders */}
         <path
             d="M10 42c0 0 6 14 22 14s22-14 22-14"
@@ -195,21 +213,80 @@ const SILHOUETTES = [
 ];
 
 const DOTS = [
-    { top: '15%', left: '20%', delay: '0s', duration: '5s' },
-    { top: '30%', right: '25%', delay: '1.5s', duration: '4s' },
-    { top: '50%', left: '85%', delay: '3s', duration: '6s' },
-    { top: '70%', left: '15%', delay: '0.5s', duration: '3.5s' },
-    { top: '45%', right: '12%', delay: '2s', duration: '5.5s' },
-    { top: '88%', left: '45%', delay: '4s', duration: '4.5s' },
+    {
+        top: '15%',
+        left: '20%',
+        delay: '0s',
+        duration: '5s',
+    },
+    {
+        top: '30%',
+        right: '25%',
+        delay: '1.5s',
+        duration: '4s',
+    },
+    {
+        top: '50%',
+        left: '85%',
+        delay: '3s',
+        duration: '6s',
+    },
+    {
+        top: '70%',
+        left: '15%',
+        delay: '0.5s',
+        duration: '3.5s',
+    },
+    {
+        top: '45%',
+        right: '12%',
+        delay: '2s',
+        duration: '5.5s',
+    },
+    {
+        top: '88%',
+        left: '45%',
+        delay: '4s',
+        duration: '4.5s',
+    },
     { top: '5%', left: '60%', delay: '1s', duration: '7s' },
-    { top: '60%', right: '35%', delay: '3.5s', duration: '5s' },
+    {
+        top: '60%',
+        right: '35%',
+        delay: '3.5s',
+        duration: '5s',
+    },
 ];
 
 const LABELS = [
-    { text: 'Anonymous', top: '18%', left: '70%', delay: '2s', duration: '15s' },
-    { text: 'Anon_42', top: '72%', left: '8%', delay: '5s', duration: '13s' },
-    { text: 'Unknown', top: '35%', right: '5%', delay: '0s', duration: '16s' },
-    { text: '? ? ?', top: '90%', right: '30%', delay: '3s', duration: '12s' },
+    {
+        text: 'Anonymous',
+        top: '18%',
+        left: '70%',
+        delay: '2s',
+        duration: '15s',
+    },
+    {
+        text: 'Anon_42',
+        top: '72%',
+        left: '8%',
+        delay: '5s',
+        duration: '13s',
+    },
+    {
+        text: 'Unknown',
+        top: '35%',
+        right: '5%',
+        delay: '0s',
+        duration: '16s',
+    },
+    {
+        text: '? ? ?',
+        top: '90%',
+        right: '30%',
+        delay: '3s',
+        duration: '12s',
+    },
 ];
 
 const SYMBOLS = [
@@ -330,7 +407,10 @@ const AnimatedBackground = () => {
                             '--drift-duration': s.duration,
                         }}
                     >
-                        <Icon className="h-5 w-5" strokeWidth={1.2} />
+                        <Icon
+                            className="h-5 w-5"
+                            strokeWidth={1.2}
+                        />
                     </div>
                 );
             })}

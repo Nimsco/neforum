@@ -40,8 +40,13 @@ const AuthLayout = ({ children }) => {
                     </Link>
 
                     <div className="mt-6 flex items-center gap-2 text-xs uppercase tracking-widest text-muted font-medium">
-                        <Shield className="h-4 w-4 text-primary" strokeWidth={2} />
-                        <span>Speak freely · Stay anonymous</span>
+                        <Shield
+                            className="h-4 w-4 text-primary"
+                            strokeWidth={2}
+                        />
+                        <span>
+                            Speak freely · Stay anonymous
+                        </span>
                     </div>
                 </div>
 
@@ -88,8 +93,8 @@ const AuthLayout = ({ children }) => {
                         className="mt-6 text-center text-[11px] text-muted/60 animate-slide-up"
                         style={{ animationDelay: '0.2s' }}
                     >
-                        By continuing you agree to NEForum&apos;s community
-                        guidelines.
+                        By continuing you agree to
+                        NEForum&apos;s community guidelines.
                     </p>
                 </div>
             </div>

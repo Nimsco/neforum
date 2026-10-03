@@ -1,22 +1,76 @@
-import { useState } from 'react';
-import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useContext, useState } from 'react';
+import {
+    User,
+    Lock,
+    Eye,
+    EyeOff,
+    ArrowRight,
+} from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout';
+import { loginUser } from '../../api/auth.api';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import getErrorMessage from '../../utils/getErrorMessage';
+import UserContext from '../../context/userContext';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const [formData, setFormData] = useState({
-        username : "",
-        password : ""
-    })
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleChange = (e) =>{
-        const {name,value} = e.target
-        
-        setFormData((prevData)=>(
-            {...prevData,[name] : value}
-        ))
-    }
+    const { setUser } = useContext(UserContext);
+
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (isSubmitting) return;
+
+        const { username, password } = formData;
+
+        try {
+            const data = await loginUser({
+                username,
+                password,
+            });
+
+            setUser({ username });
+
+            toast.success(
+                data.message ||
+                    'User Logged In Successfully.'
+            );
+
+            navigate('/');
+        } catch (error) {
+            console.log('Full error:', error);
+            console.log(
+                'Backend response:',
+                error.response?.data
+            );
+
+            toast.error(
+                getErrorMessage(error, 'Login failed.')
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <AuthLayout>
@@ -31,7 +85,10 @@ const Login = () => {
             </div>
 
             {/* Form */}
-            <form className="space-y-4">
+            <form
+                className="space-y-4"
+                onSubmit={handleSubmit}
+            >
                 {/* Username */}
                 <div>
                     <label
@@ -72,7 +129,11 @@ const Login = () => {
                         <input
                             id="password"
                             name="password"
-                            type={showPassword ? 'text' : 'password'}
+                            type={
+                                showPassword
+                                    ? 'text'
+                                    : 'password'
+                            }
                             value={formData.password}
                             onChange={handleChange}
                             autoComplete="current-password"
@@ -105,8 +166,13 @@ const Login = () => {
                     type="submit"
                     className="btn-primary group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                 >
-                    Login
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    {isSubmitting
+                        ? 'Logging In...'
+                        : 'Login'}
+
+                    {!isSubmitting && (
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    )}
                 </button>
             </form>
         </AuthLayout>
