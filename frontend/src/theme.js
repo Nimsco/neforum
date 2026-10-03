@@ -40,7 +40,6 @@ export const light = {
     accentLight: '#EDE9FE',
 };
 
-
 // ─── Dark palette ────────────────────────────────────────────────
 
 export const dark = {
@@ -76,17 +75,15 @@ export const dark = {
     accentLight: '#2E1065',
 };
 
-
 // ─── Shared constants ────────────────────────────────────────────
 
 export const radius = {
-    sm: '0.375rem',  // 6px
-    md: '0.5rem',    // 8px
-    lg: '0.75rem',   // 12px
-    xl: '1rem',      // 16px
+    sm: '0.375rem', // 6px
+    md: '0.5rem', // 8px
+    lg: '0.75rem', // 12px
+    xl: '1rem', // 16px
     full: '9999px',
 };
-
 
 export const shadow = {
     sm: '0 1px 2px 0 rgba(15, 23, 42, 0.05)',
@@ -99,7 +96,6 @@ export const shadow = {
         '0 10px 15px -3px rgba(15, 23, 42, 0.10), ' +
         '0 4px 6px -4px rgba(15, 23, 42, 0.10)',
 };
-
 
 export const typography = {
     fontFamily:
