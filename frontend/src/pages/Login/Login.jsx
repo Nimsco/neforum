@@ -44,15 +44,17 @@ const Login = () => {
         const { username, password } = formData;
 
         try {
-            const data = await loginUser({
-                username,
+            const response = await loginUser({
+                username: username.trim(),
                 password,
             });
 
-            setUser({ username });
+            setUser(
+                response.user
+            );
 
             toast.success(
-                data.message ||
+                response.message ||
                     'User Logged In Successfully.'
             );
 

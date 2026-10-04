@@ -73,7 +73,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-        throw new ApiError(404, 'User not found');
+        throw new ApiError(404, 'Invalid Credentials.');
     }
 
     if (user.isBlocked) {

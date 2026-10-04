@@ -53,16 +53,19 @@ const Register = () => {
         setIsSubmitting(true);
 
         try {
-            const data = await registerUser({
+            const response = await registerUser({
                 username: username.trim(),
                 password,
                 confirmPassword,
             });
 
-            setUser({ username });
+            setUser(
+                response.user.username,
+                response.user.id
+            );
 
             toast.success(
-                data.message ||
+                response.message ||
                     'User Registered Successfully.'
             );
 
