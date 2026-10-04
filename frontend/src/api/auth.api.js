@@ -6,7 +6,7 @@ const registerUser = async (userData) => {
         '/users/register',
         userData
     );
-    return response.data;
+    return response.data.data;
 };
 
 const loginUser = async (credentials) => {
@@ -14,7 +14,7 @@ const loginUser = async (credentials) => {
         '/users/login',
         credentials
     );
-    return response.data;
+    return response.data.data;
 };
 
 export { registerUser, loginUser };
