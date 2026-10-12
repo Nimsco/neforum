@@ -13,6 +13,7 @@ import User from '../models/user.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { generateRecoveryKey } from '../utils/generateRecoveryKey.js';
 import bcrypt from 'bcryptjs';
+import { verifyRefreshToken } from '../utils/verifyRefreshToken.js';
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, password, confirmPassword } =
@@ -211,10 +212,56 @@ const changeUserPassword = asyncHandler(
     }
 );
 
+const refreshAccessToken = asyncHandler(
+    async (req, res) => {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (!refreshToken) {
+            throw new ApiError(
+                401,
+                'Refresh Token Is Required.'
+            );
+        }
+
+        const decodedToken =
+            verifyRefreshToken(refreshToken);
+
+        const user = await User.findById(decodedToken.id);
+
+        if (!user || !(refreshToken == user.refreshToken)) {
+            throw new ApiError(
+                401,
+                'Invalid Refresh Token.'
+            );
+        }
+
+        if (user.isBlocked) {
+            throw new ApiError(401, 'User Is Blocked.');
+        }
+
+        const accessToken = generateAccessToken(user);
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    user: {
+                        id: user._id,
+                        username: user.username,
+                    },
+                    accessToken,
+                },
+                'Access Token Refreshed Successfully.'
+            )
+        );
+    }
+);
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     getCurrentUser,
     changeUserPassword,
+    refreshAccessToken,
 };

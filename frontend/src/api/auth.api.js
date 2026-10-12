@@ -17,4 +17,26 @@ const loginUser = async (credentials) => {
     return response.data.data;
 };
 
-export { registerUser, loginUser };
+const getCurrentUser = async (accessToken) => {
+    const response = await api.get('/users/current-user', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    return response.data.data;
+};
+
+const refreshAccessToken = async () => {
+    const response = await api.post(
+        '/users/refresh-access-token'
+    );
+
+    return response.data.data;
+};
+
+export {
+    registerUser,
+    loginUser,
+    getCurrentUser,
+    refreshAccessToken,
+};
