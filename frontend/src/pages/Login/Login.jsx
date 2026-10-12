@@ -41,6 +41,8 @@ const Login = () => {
 
         if (isSubmitting) return;
 
+        setIsSubmitting(true);
+
         const { username, password } = formData;
 
         try {
@@ -49,9 +51,10 @@ const Login = () => {
                 password,
             });
 
-            setUser(
-                response.user
-            );
+            setUser({
+                ...response.user,
+                accessToken: response.accessToken,
+            });
 
             toast.success(
                 response.message ||
