@@ -1,9 +1,12 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, PenLine } from 'lucide-react';
 import PostCard from './PostCard';
 import { CommentModal } from '../Comments';
-import PostContext from '../../context/postContext/postContext';
+import UserContext from '../../context/userContext/userContext';
+import { getPosts } from '../../api/post.api';
+import getErrorMessage from '../../utils/getErrorMessage';
+import { toast } from 'react-toastify';
 
 /**
  * ConversationFeed — post feed on the Home page
@@ -16,7 +19,7 @@ import PostContext from '../../context/postContext/postContext';
 const tabs = ['Trending', 'Latest', 'Unanswered'];
 
 const ConversationFeed = ({
-    posts: propPosts,
+    posts,
     onLike,
     onComment,
     onSave,
@@ -28,15 +31,35 @@ const ConversationFeed = ({
     const [activeCommentPost, setActiveCommentPost] =
         useState(null);
 
-    // Context fallback if posts aren't passed directly as prop
-    const postContext = useContext(PostContext);
-    const contextPosts = postContext?.posts;
-    const isPostsLoading = postContext?.isPostsLoading;
+    const [isPostsLoading, setisPostsLoading] =
+        useState(false);
 
-    const posts =
-        propPosts !== undefined
-            ? propPosts
-            : contextPosts || [];
+    // Context fallback if posts aren't passed directly as prop
+    const [posts, setPosts] = useState([]);
+
+    const { user, isAuthLoading } = useContext(UserContext);
+
+    useEffect(() => {
+        if (isAuthLoading || !user?.accessToken) return;
+
+        try {
+            const fetchPosts = async () => {
+                setisPostsLoading(true);
+                const response = await getPosts(
+                    user.accessToken
+                );
+                setPosts(response.posts);
+            };
+            fetchPosts();
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error?.message ||
+                        'Could not fetch posts.'
+                )
+            );
+        }
+    }, [user?.accessToken, isAuthLoading]);
 
     const handleComment = (post) => {
         setActiveCommentPost(post);
@@ -79,7 +102,7 @@ const ConversationFeed = ({
 
             {/* ── Feed Content ── */}
             {isPostsLoading ? (
-                <div className="flex min-h-[200px] items-center justify-center py-12">
+                <div className="flex min-h-50 items-center justify-center py-12">
                     <span className="block h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             ) : posts.length === 0 ? (

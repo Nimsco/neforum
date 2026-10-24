@@ -7,6 +7,11 @@ const UserContextProvider = ({ children }) => {
     const [isAuthLoading, setIsAuthLoading] =
         useState(true);
 
+    const resetUser = () => {
+        setUser(null);
+        setIsAuthLoading(true);
+    };
+
     useEffect(() => {
         const restoreSession = async () => {
             try {
@@ -27,7 +32,12 @@ const UserContextProvider = ({ children }) => {
 
     return (
         <UserContext.Provider
-            value={{ user, setUser, isAuthLoading }}
+            value={{
+                user,
+                setUser,
+                isAuthLoading,
+                resetUser,
+            }}
         >
             {children}
         </UserContext.Provider>

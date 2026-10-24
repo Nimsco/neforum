@@ -34,9 +34,19 @@ const refreshAccessToken = async () => {
     return response.data.data;
 };
 
+const logoutUser = async (accessToken) => {
+    const response = await api.get('/users/logout', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    return response.data.data;
+};
+
 export {
     registerUser,
     loginUser,
     getCurrentUser,
     refreshAccessToken,
+    logoutUser,
 };

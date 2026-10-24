@@ -6,9 +6,6 @@ import { getUserPosts } from '../../api/user.api';
 const PostContextProvider = ({ children }) => {
     const context = useContext(UserContext);
 
-    console.log('Imported UserContext:', UserContext);
-    console.log('Context value:', context);
-
     const { user, isAuthLoading } = context;
 
     const [posts, setPosts] = useState([]);
@@ -16,6 +13,13 @@ const PostContextProvider = ({ children }) => {
     const [isPostsLoading, setIsPostsLoading] =
         useState(false);
     const [postError, setPostError] = useState('');
+
+    const resetPost = () => {
+        setPosts([]);
+        setPostCount(0);
+        setIsPostsLoading(false);
+        setPostError('');
+    };
 
     useEffect(() => {
         if (isAuthLoading || !user?.accessToken) {
@@ -88,6 +92,7 @@ const PostContextProvider = ({ children }) => {
         isPostsLoading,
         postError,
         refreshUserPosts,
+        resetPost,
     };
 
     return (

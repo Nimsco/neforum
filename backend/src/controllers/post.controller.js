@@ -40,4 +40,26 @@ const createPost = asyncHandler(async (req, res) => {
         );
 });
 
-export { createPost };
+const getPosts = asyncHandler(async (req, res) => {
+    const user = req.user?.id;
+    if (!user) {
+        throw new ApiError(
+            401,
+            'User must be logged in to view posts.'
+        );
+    }
+
+    const posts = await Post.find().limit(10);
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                posts,
+                'Posts fetched successfully'
+            )
+        );
+});
+
+export { createPost, getPosts };
