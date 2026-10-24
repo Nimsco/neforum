@@ -25,6 +25,12 @@ const Header = () => {
                     />
                     <span className="text-xl font-bold tracking-tight text-foreground">
                         NEForum
+                        <span
+                            aria-hidden="true"
+                            className="text-xs font-normal opacity-80"
+                        >
+                            ®
+                        </span>
                         <span className="text-primary">
                             .
                         </span>

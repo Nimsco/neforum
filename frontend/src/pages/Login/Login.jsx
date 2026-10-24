@@ -11,7 +11,7 @@ import { loginUser } from '../../api/auth.api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import getErrorMessage from '../../utils/getErrorMessage';
-import UserContext from '../../context/userContext';
+import UserContext from '../../context/userContext/userContext';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);

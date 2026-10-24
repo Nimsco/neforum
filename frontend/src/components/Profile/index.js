@@ -5,3 +5,5 @@ export { default as ProfilePostCard } from './ProfilePostCard';
 export { default as ProfileCommentCard } from './ProfileCommentCard';
 export { default as ProfileSavedCard } from './ProfileSavedCard';
 export { default as ProfileContentArea } from './ProfileContentArea';
+export { default as ProfileActions } from './ProfileActions';
+export { default as ChangePasswordModal } from './ChangePasswordModal';

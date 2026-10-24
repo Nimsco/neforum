@@ -14,6 +14,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { generateRecoveryKey } from '../utils/generateRecoveryKey.js';
 import bcrypt from 'bcryptjs';
 import { verifyRefreshToken } from '../utils/verifyRefreshToken.js';
+import Post from '../models/post.model.js';
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, password, confirmPassword } =
@@ -257,6 +258,23 @@ const refreshAccessToken = asyncHandler(
     }
 );
 
+const getUserPosts = asyncHandler(async (req, res) => {
+    const posts = await Post.find({
+        author: req.user?.id,
+    });
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                posts,
+                postCount: posts.length,
+            },
+            'Posts fetched successfully.'
+        )
+    );
+});
+
 export {
     registerUser,
     loginUser,
@@ -264,4 +282,5 @@ export {
     getCurrentUser,
     changeUserPassword,
     refreshAccessToken,
+    getUserPosts,
 };

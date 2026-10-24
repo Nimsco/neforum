@@ -94,8 +94,39 @@ const validateUsername = async (inputUsername) => {
     }
 };
 
+const validatePost = (postTitle, postContent) => {
+    const title = postTitle.trim();
+    const content = postContent.trim();
+
+    if (!title || !content) {
+        throw new ApiError(401, 'Title or post missing.');
+    }
+
+    if (title.length < 1 || content.length < 1) {
+        throw new ApiError(
+            401,
+            'Title or content must have at least 1 character.'
+        );
+    }
+
+    if (title.length > 100) {
+        throw new ApiError(
+            401,
+            'Title length must be below 100 characters.'
+        );
+    }
+
+    if (content.length > 3000) {
+        throw new ApiError(
+            401,
+            'Content length must be below 3000 characters.'
+        );
+    }
+};
+
 export {
     validatePassword,
     validateUsername,
     validateNewPassword,
+    validatePost,
 };

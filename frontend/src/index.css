@@ -377,6 +377,90 @@ body {
     animation: wobble 0.5s ease;
 }
 
+/* ─── Micro-interactions: Like, Save & Modal ────────────────────── */
+@keyframes heart-pop {
+    0% {
+        transform: scale(1);
+    }
+    20% {
+        transform: scale(1.35) rotate(-6deg);
+    }
+    45% {
+        transform: scale(0.9) rotate(4deg);
+    }
+    70% {
+        transform: scale(1.15) rotate(-2deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes bookmark-bounce {
+    0% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(0.85) translateY(2px);
+    }
+    55% {
+        transform: scale(1.22) translateY(-3px);
+    }
+    80% {
+        transform: scale(0.96) translateY(1px);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes modal-backdrop-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modal-pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-heart-pop {
+    animation: heart-pop 0.45s
+        cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-bookmark-bounce {
+    animation: bookmark-bounce 0.45s
+        cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-modal-pop {
+    animation: modal-pop-in 0.3s
+        cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-backdrop {
+    animation: modal-backdrop-fade 0.25s ease-out forwards;
+}
+
+.like-glow {
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.55));
+}
+
+.save-glow {
+    filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.5));
+}
+
 /* ─── Scrollbar ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
     width: 6px;
