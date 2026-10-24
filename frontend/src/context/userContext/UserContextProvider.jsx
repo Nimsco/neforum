@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import UserContext from './userContext';
-import { refreshAccessToken } from '../api/auth.api';
-import { toast } from 'react-toastify';
-import getErrorMessage from '../utils/getErrorMessage';
+import { refreshAccessToken } from '../../api/auth.api';
 
 const UserContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);

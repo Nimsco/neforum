@@ -1,4 +1,5 @@
 import { PenLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * HeroSection — quiet masthead
@@ -30,10 +31,13 @@ const HeroSection = () => {
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-4">
-                <button className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80">
+                <Link
+                    to="/create-post"
+                    className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80"
+                >
                     <PenLine className="h-4 w-4" />
                     New post
-                </button>
+                </Link>
 
                 {/* quiet live presence, no pinging */}
                 <span className="inline-flex items-center gap-2 text-xs text-muted">

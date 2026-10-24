@@ -36,9 +36,11 @@ app.use(
 
 //routes import
 import userRoutes from './routes/user.routes.js';
+import postRoutes from './routes/post.routes.js';
 
 //routes
 app.use('/api/users', userRoutes);
+app.use('/api/post', postRoutes);
 
 //error handler
 app.use(errorHandler);

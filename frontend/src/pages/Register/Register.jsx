@@ -12,14 +12,14 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../api/auth.api';
 import getErrorMessage from '../../utils/getErrorMessage';
-import userContext from '../../context/userContext';
+import UserContext from '../../context/userContext/userContext';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { setUser } = useContext(userContext);
+    const { setUser } = useContext(UserContext);
 
     const navigate = useNavigate();
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     FileText,
     MessageSquare,
@@ -6,6 +7,7 @@ import {
 import ProfilePostCard from './ProfilePostCard';
 import ProfileCommentCard from './ProfileCommentCard';
 import ProfileSavedCard from './ProfileSavedCard';
+import { CommentModal } from '../Comments';
 
 /**
  * ProfileContentArea
@@ -42,7 +44,21 @@ const ProfileContentArea = ({
     posts = [],
     comments = [],
     saved = [],
+    onLike,
+    onComment,
+    onSave,
+    onShare,
+    onDelete,
+    showDelete,
 }) => {
+    const [activeCommentPost, setActiveCommentPost] =
+        useState(null);
+
+    const handleComment = (post) => {
+        setActiveCommentPost(post);
+        onComment?.(post);
+    };
+
     /* ── Decide which list + card to render ── */
     let items, CardComponent;
 
@@ -84,24 +100,44 @@ const ProfileContentArea = ({
 
     /* ── Item list ── */
     return (
-        <div className="flex flex-col gap-3 animate-slide-up">
-            {items.map((item) => {
-                const key =
-                    item._id || item.id || Math.random();
+        <>
+            <div className="flex flex-col gap-3 animate-slide-up">
+                {items.map((item) => {
+                    const key =
+                        item._id ||
+                        item.id ||
+                        Math.random();
 
-                if (activeTab === 'comments') {
+                    if (activeTab === 'comments') {
+                        return (
+                            <CardComponent
+                                key={key}
+                                comment={item}
+                            />
+                        );
+                    }
                     return (
                         <CardComponent
                             key={key}
-                            comment={item}
+                            post={item}
+                            onLike={onLike}
+                            onComment={handleComment}
+                            onSave={onSave}
+                            onShare={onShare}
+                            onDelete={onDelete}
+                            showDelete={showDelete}
                         />
                     );
-                }
-                return (
-                    <CardComponent key={key} post={item} />
-                );
-            })}
-        </div>
+                })}
+            </div>
+
+            {/* ── Animated Comment Popup Modal ── */}
+            <CommentModal
+                isOpen={!!activeCommentPost}
+                post={activeCommentPost}
+                onClose={() => setActiveCommentPost(null)}
+            />
+        </>
     );
 };
 
