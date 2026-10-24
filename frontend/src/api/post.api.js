@@ -13,4 +13,13 @@ const createPost = async (postData, accessToken) => {
     return response.data.data;
 };
 
-export { createPost };
+const getPosts = async (accessToken) => {
+    const response = await api.get('/posts/get-posts', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    return response.data.data;
+};
+
+export { createPost, getPosts };

@@ -146,7 +146,7 @@ const PostCard = ({
 
             {/* ── Title ── */}
             <h3 className="group flex items-start justify-between gap-3 text-base font-semibold leading-snug text-foreground transition-colors">
-                <span className="break-words">
+                <span className="wrap-break-word">
                     {post?.title}
                 </span>
                 <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-transparent transition-colors group-hover:text-muted" />
@@ -154,7 +154,7 @@ const PostCard = ({
 
             {/* ── Content / Excerpt ── */}
             {post?.content && (
-                <p className="mt-2 text-sm leading-relaxed text-muted/90 line-clamp-3 break-words">
+                <p className="mt-2 text-sm leading-relaxed text-muted/90 line-clamp-3 wrap-break-word">
                     {post.content}
                 </p>
             )}

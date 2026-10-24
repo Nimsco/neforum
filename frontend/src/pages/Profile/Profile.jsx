@@ -8,18 +8,26 @@ import {
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';
-import { getCurrentUser } from '../../api/auth.api';
+import {
+    getCurrentUser,
+    logoutUser,
+} from '../../api/auth.api';
 import { LoadingScreen } from '../../components/LoadingScreen';
+import getErrorMessage from '../../utils/getErrorMessage';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [isChangePasswordOpen, setIsChangePasswordOpen] =
         useState(false);
 
-    const { user, isAuthLoading } = useContext(UserContext);
+    const { user, isAuthLoading, resetUser } =
+        useContext(UserContext);
 
     const [currentUser, setCurrentUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const navigate = useNavigate();
 
     const {
         posts,
@@ -27,6 +35,7 @@ const Profile = () => {
         isPostsLoading,
         postError,
         refreshUserPosts,
+        resetPost,
     } = useContext(PostContext);
 
     const comments = [];
@@ -54,8 +63,25 @@ const Profile = () => {
         fetchUser();
     }, [user?.accessToken, isAuthLoading]);
 
-    const handleLogout = () => {
-        // Ready for your logout logic
+    const handleLogout = async () => {
+        if (!user.accessToken) return;
+
+        try {
+            await logoutUser(user.accessToken);
+
+            toast.success('Logged out successfully.');
+
+            navigate('/login');
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error?.message || 'Failed to logout.'
+                )
+            );
+        } finally {
+            resetUser();
+            resetPost();
+        }
     };
 
     const handleChangePasswordSubmit = (formData) => {
