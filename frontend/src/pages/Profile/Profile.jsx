@@ -24,22 +24,15 @@ const Profile = () => {
     const { user, isAuthLoading, resetUser } =
         useContext(UserContext);
 
+    const { userPosts, savedPosts, deletePost, resetPost } =
+        useContext(PostContext);
+
     const [currentUser, setCurrentUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
 
-    const {
-        posts,
-        postCount,
-        isPostsLoading,
-        postError,
-        refreshUserPosts,
-        resetPost,
-    } = useContext(PostContext);
-
     const comments = [];
-    const saved = [];
 
     useEffect(() => {
         if (isAuthLoading || !user?.accessToken) return;
@@ -74,9 +67,7 @@ const Profile = () => {
             navigate('/login');
         } catch (error) {
             toast.error(
-                getErrorMessage(
-                    error?.message || 'Failed to logout.'
-                )
+                getErrorMessage(error, 'Failed to logout.')
             );
         } finally {
             resetUser();
@@ -84,7 +75,21 @@ const Profile = () => {
         }
     };
 
-    const handleChangePasswordSubmit = (formData) => {
+    const handleDeletePost = async (post) => {
+        const postId = post?._id || post?.id || post;
+
+        if (!user?.accessToken) {
+            toast.error('Please login first.');
+            return;
+        }
+
+        const deleted = await deletePost(postId);
+
+        if (!deleted) return;
+
+        toast.success('Post deleted.');
+    };
+    const handleChangePasswordSubmit = (_formData) => {
         // Ready for your change password logic
     };
 
@@ -101,7 +106,7 @@ const Profile = () => {
             <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6">
                 <ProfileHeader
                     user={currentUser}
-                    postCount={posts.length}
+                    postCount={userPosts.length}
                     commentCount={comments.length}
                     onChangePassword={() =>
                         setIsChangePasswordOpen(true)
@@ -117,9 +122,10 @@ const Profile = () => {
                 <div className="w-full">
                     <ProfileContentArea
                         activeTab={activeTab}
-                        posts={posts}
+                        posts={userPosts}
                         comments={comments}
-                        saved={saved}
+                        saved={savedPosts}
+                        onDelete={handleDeletePost}
                     />
                 </div>
             </div>

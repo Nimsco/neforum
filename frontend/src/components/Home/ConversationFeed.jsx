@@ -1,69 +1,29 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, PenLine } from 'lucide-react';
-import PostCard from './PostCard';
+import PostCard from '../PostCard';
 import { CommentModal } from '../Comments';
-import UserContext from '../../context/userContext/userContext';
-import { getPosts } from '../../api/post.api';
-import getErrorMessage from '../../utils/getErrorMessage';
-import { toast } from 'react-toastify';
+import PostContext from '../../context/postContext/postContext';
 
 /**
  * ConversationFeed — post feed on the Home page
  *
- * All static/mock posts removed.
- * Feeds from props or PostContext dynamically.
+ * Reads posts directly from PostContext.
  * Features tabs, empty state, and popup comment modal with animations.
  */
 
 const tabs = ['Trending', 'Latest', 'Unanswered'];
 
-const ConversationFeed = ({
-    posts,
-    onLike,
-    onComment,
-    onSave,
-    onShare,
-    onDelete,
-    onPostClick,
-}) => {
+const ConversationFeed = () => {
+    const { allPosts, isFeedLoading } =
+        useContext(PostContext);
+
     const [activeTab, setActiveTab] = useState('Trending');
     const [activeCommentPost, setActiveCommentPost] =
         useState(null);
 
-    const [isPostsLoading, setisPostsLoading] =
-        useState(false);
-
-    // Context fallback if posts aren't passed directly as prop
-    const [posts, setPosts] = useState([]);
-
-    const { user, isAuthLoading } = useContext(UserContext);
-
-    useEffect(() => {
-        if (isAuthLoading || !user?.accessToken) return;
-
-        try {
-            const fetchPosts = async () => {
-                setisPostsLoading(true);
-                const response = await getPosts(
-                    user.accessToken
-                );
-                setPosts(response.posts);
-            };
-            fetchPosts();
-        } catch (error) {
-            toast.error(
-                getErrorMessage(
-                    error?.message ||
-                        'Could not fetch posts.'
-                )
-            );
-        }
-    }, [user?.accessToken, isAuthLoading]);
-
     const handleComment = (post) => {
         setActiveCommentPost(post);
-        onComment?.(post);
     };
 
     return (
@@ -93,19 +53,19 @@ const ConversationFeed = ({
                 </div>
 
                 <span className="hidden text-xs text-muted sm:inline">
-                    {posts.length}{' '}
-                    {posts.length === 1
+                    {allPosts.length}{' '}
+                    {allPosts.length === 1
                         ? 'conversation'
                         : 'conversations'}
                 </span>
             </div>
 
             {/* ── Feed Content ── */}
-            {isPostsLoading ? (
+            {isFeedLoading ? (
                 <div className="flex min-h-50 items-center justify-center py-12">
                     <span className="block h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
-            ) : posts.length === 0 ? (
+            ) : allPosts.length === 0 ? (
                 /* Empty state when no posts are available */
                 <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-14 px-4 text-center">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground/5 text-muted mb-3">
@@ -130,16 +90,12 @@ const ConversationFeed = ({
             ) : (
                 /* Post cards list */
                 <div className="mt-4 flex flex-col gap-3">
-                    {posts.map((post) => (
+                    {allPosts.map((post) => (
                         <PostCard
                             key={post._id || post.id}
                             post={post}
-                            onLike={onLike}
                             onComment={handleComment}
-                            onSave={onSave}
-                            onShare={onShare}
-                            onDelete={onDelete}
-                            onClick={onPostClick}
+                            showDelete={false}
                         />
                     ))}
                 </div>

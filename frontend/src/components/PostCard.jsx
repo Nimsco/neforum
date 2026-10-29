@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
     Heart,
     MessageSquare,
@@ -8,6 +8,7 @@ import {
     Clock,
     ArrowUpRight,
 } from 'lucide-react';
+import PostContext from '../context/postContext/postContext';
 
 /**
  * Helper to display relative or localized post timestamp
@@ -46,15 +47,15 @@ const formatPostTime = (dateStr) => {
  * Unified PostCard Component
  *
  * Features glowing like animations, interactive save UI, comment triggers,
- * and modular prop callbacks.
+ * and modular prop callbacks (with fallback to PostContext).
  *
  * @param {object}   post       - The post data object
- * @param {boolean}  showDelete - Control visibility of the delete button (e.g. post.author === user?.id)
- * @param {function} onLike     - Callback when like button is clicked
+ * @param {boolean}  showDelete - Control visibility of the delete button
+ * @param {function} onLike     - Optional callback when like button is clicked
  * @param {function} onComment  - Callback when comment button is clicked
- * @param {function} onSave     - Callback when save button is clicked
+ * @param {function} onSave     - Optional callback when save button is clicked
  * @param {function} onShare    - Callback when share button is clicked
- * @param {function} onDelete   - Callback when delete button is clicked
+ * @param {function} onDelete   - Optional callback when delete button is clicked
  * @param {function} onClick    - Callback when post card is clicked
  * @param {string}   className  - Extra styling classes
  */
@@ -69,43 +70,53 @@ const PostCard = ({
     onClick,
     className = '',
 }) => {
-    // Interactive local states for animations (falls back to post data if provided)
-    const [isLiked, setIsLiked] = useState(
-        post?.isLiked || false
-    );
-    const [likeCount, setLikeCount] = useState(
-        post?.likeCount ?? post?.upvotes ?? 0
-    );
+    const postContext = useContext(PostContext);
+    const likePost = postContext?.likePost;
+    const savePost = postContext?.savePost;
+    const deletePost = postContext?.deletePost;
+
+    // Derived states from post object (single source of truth)
+    const isLiked = Boolean(post?.isLiked);
+    const likeCount = post?.likeCount ?? post?.upvotes ?? 0;
+    const isSaved = Boolean(post?.isSaved);
+
+    // Animation trigger states
     const [isLikeAnimating, setIsLikeAnimating] =
         useState(false);
-
-    const [isSaved, setIsSaved] = useState(
-        post?.isSaved || false
-    );
     const [isSaveAnimating, setIsSaveAnimating] =
         useState(false);
 
     const handleLikeClick = (e) => {
         e.stopPropagation();
-        const nextLiked = !isLiked;
-        setIsLiked(nextLiked);
-        setLikeCount((prev) =>
-            nextLiked ? prev + 1 : Math.max(0, prev - 1)
-        );
         setIsLikeAnimating(true);
         setTimeout(() => setIsLikeAnimating(false), 500);
 
-        onLike?.({ ...post, isLiked: nextLiked });
+        if (onLike) {
+            onLike({ ...post, isLiked: !isLiked });
+        } else if (likePost) {
+            likePost(post?._id || post?.id);
+        }
     };
 
     const handleSaveClick = (e) => {
         e.stopPropagation();
-        const nextSaved = !isSaved;
-        setIsSaved(nextSaved);
         setIsSaveAnimating(true);
         setTimeout(() => setIsSaveAnimating(false), 500);
 
-        onSave?.({ ...post, isSaved: nextSaved });
+        if (onSave) {
+            onSave({ ...post, isSaved: !isSaved });
+        } else if (savePost) {
+            savePost(post?._id || post?.id);
+        }
+    };
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation();
+        if (onDelete) {
+            onDelete(post);
+        } else if (deletePost) {
+            deletePost(post?._id || post?.id);
+        }
     };
 
     const timeDisplay =
@@ -241,10 +252,7 @@ const PostCard = ({
                 {showDelete && (
                     <button
                         type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete?.(post);
-                        }}
+                        onClick={handleDeleteClick}
                         className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-error/10 hover:text-error cursor-pointer"
                         aria-label="Delete post"
                     >
