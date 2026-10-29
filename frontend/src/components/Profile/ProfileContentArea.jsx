@@ -1,24 +1,26 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
     FileText,
     MessageSquare,
     Bookmark,
 } from 'lucide-react';
-import ProfilePostCard from './ProfilePostCard';
 import ProfileCommentCard from './ProfileCommentCard';
 import ProfileSavedCard from './ProfileSavedCard';
 import { CommentModal } from '../Comments';
+import PostContext from '../../context/postContext/postContext';
+import PostCard from '../PostCard';
 
 /**
  * ProfileContentArea
  *
  * Renders the list of items based on the currently active tab.
  * Shows an empty-state placeholder when there's no data.
+ * Consumes PostContext by default to prevent prop-drilling.
  *
  * @param {string}  activeTab — 'posts' | 'comments' | 'saved'
- * @param {array}   posts     — Array of post objects.
- * @param {array}   comments  — Array of comment objects.
- * @param {array}   saved     — Array of saved post objects.
+ * @param {array}   [posts]   — Optional override for posts array
+ * @param {array}   [comments]— Array of comment objects
+ * @param {array}   [saved]   — Optional override for saved posts array
  */
 
 const emptyConfig = {
@@ -41,9 +43,9 @@ const emptyConfig = {
 
 const ProfileContentArea = ({
     activeTab,
-    posts = [],
+    posts: propPosts,
     comments = [],
-    saved = [],
+    saved: propSaved,
     onLike,
     onComment,
     onSave,
@@ -51,8 +53,14 @@ const ProfileContentArea = ({
     onDelete,
     showDelete,
 }) => {
+    const postContext = useContext(PostContext);
     const [activeCommentPost, setActiveCommentPost] =
         useState(null);
+
+    // Fall back to PostContext if not explicitly provided
+    const posts = propPosts ?? postContext?.userPosts ?? [];
+    const saved =
+        propSaved ?? postContext?.savedPosts ?? [];
 
     const handleComment = (post) => {
         setActiveCommentPost(post);
@@ -74,7 +82,7 @@ const ProfileContentArea = ({
         case 'posts':
         default:
             items = posts;
-            CardComponent = ProfilePostCard;
+            CardComponent = PostCard;
             break;
     }
 
@@ -102,11 +110,9 @@ const ProfileContentArea = ({
     return (
         <>
             <div className="flex flex-col gap-3 animate-slide-up">
-                {items.map((item) => {
+                {items.map((item, index) => {
                     const key =
-                        item._id ||
-                        item.id ||
-                        Math.random();
+                        item._id || item.id || index;
 
                     if (activeTab === 'comments') {
                         return (

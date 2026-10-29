@@ -49,7 +49,9 @@ const getPosts = asyncHandler(async (req, res) => {
         );
     }
 
-    const posts = await Post.find().limit(10);
+    const posts = await Post.find()
+        .populate('author', 'username')
+        .limit(10);
 
     return res
         .status(200)
@@ -62,4 +64,41 @@ const getPosts = asyncHandler(async (req, res) => {
         );
 });
 
-export { createPost, getPosts };
+const deletePost = asyncHandler(async (req, res) => {
+    const user = req.user?.id;
+    if (!user) {
+        throw new ApiError(
+            400,
+            'User must be logged in to delete posts.'
+        );
+    }
+
+    const postId = req.body?.postId;
+    if (!postId) {
+        throw new ApiError(400, 'Post not available.');
+    }
+
+    const deletedPost = await Post.findOneAndDelete({
+        _id: postId,
+        author: user,
+    });
+
+    if (!deletedPost) {
+        throw new ApiError(
+            404,
+            'Post not found or you are not authorized to delete this post.'
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                'Post deleted successfully'
+            )
+        );
+});
+
+export { createPost, getPosts, deletePost };

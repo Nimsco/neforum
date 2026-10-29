@@ -8,16 +8,16 @@ import {
     CreatePostReminder,
 } from '../../components/CreatePost';
 import UserContext from '../../context/userContext/userContext';
+import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';
 import getErrorMessage from '../../utils/getErrorMessage';
-import { createPost } from '../../api/post.api';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * CreatePost — page for creating a new post
  *
- * Uses a semantic <form> container and clean modular subcomponents.
- * Ready for you to attach your submit handler and state logic.
+ * Uses PostContext.createPost so the feed and profile
+ * update automatically after publishing.
  */
 const CreatePost = () => {
     const [title, setTitle] = useState('');
@@ -26,6 +26,7 @@ const CreatePost = () => {
     const [isPosting, setIsPosting] = useState(false);
 
     const { isAuthLoading, user } = useContext(UserContext);
+    const { createPost } = useContext(PostContext);
 
     const navigate = useNavigate();
 
@@ -44,13 +45,10 @@ const CreatePost = () => {
         try {
             setIsPosting(true);
 
-            await createPost(
-                {
-                    title: title.trim(),
-                    content: content.trim(),
-                },
-                user.accessToken
-            );
+            await createPost({
+                title: title.trim(),
+                content: content.trim(),
+            });
 
             toast.success('Post created successfully.');
 
@@ -58,8 +56,8 @@ const CreatePost = () => {
         } catch (error) {
             toast.error(
                 getErrorMessage(
-                    error?.message ||
-                        'Post creation failed.'
+                    error,
+                    'Post creation failed.'
                 )
             );
         } finally {
