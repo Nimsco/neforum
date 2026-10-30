@@ -15,10 +15,16 @@ import {
 import { LoadingScreen } from '../../components/LoadingScreen';
 import getErrorMessage from '../../utils/getErrorMessage';
 import { useNavigate } from 'react-router-dom';
+import { LogOut, Trash2 } from 'lucide-react';
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [isChangePasswordOpen, setIsChangePasswordOpen] =
+        useState(false);
+
+    const [postToDelete, setPostToDelete] = useState(null);
+
+    const [showLogoutPopup, setShowLogoutPopup] =
         useState(false);
 
     const { user, isAuthLoading, resetUser } =
@@ -56,6 +62,33 @@ const Profile = () => {
         fetchUser();
     }, [user?.accessToken, isAuthLoading]);
 
+    const handleDeletePost = (post) => {
+        setPostToDelete(post);
+    };
+
+    const confirmDeletePost = async () => {
+        if (!postToDelete) return;
+
+        try {
+            const deleted = await deletePost(
+                postToDelete._id || postToDelete.id
+            );
+
+            if (deleted) {
+                toast.success('Post deleted successfully.');
+            }
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    'Failed to delete post.'
+                )
+            );
+        } finally {
+            setPostToDelete(null);
+        }
+    };
+
     const handleLogout = async () => {
         if (!user.accessToken) return;
 
@@ -75,20 +108,6 @@ const Profile = () => {
         }
     };
 
-    const handleDeletePost = async (post) => {
-        const postId = post?._id || post?.id || post;
-
-        if (!user?.accessToken) {
-            toast.error('Please login first.');
-            return;
-        }
-
-        const deleted = await deletePost(postId);
-
-        if (!deleted) return;
-
-        toast.success('Post deleted.');
-    };
     const handleChangePasswordSubmit = (_formData) => {
         // Ready for your change password logic
     };
@@ -111,7 +130,9 @@ const Profile = () => {
                     onChangePassword={() =>
                         setIsChangePasswordOpen(true)
                     }
-                    onLogout={handleLogout}
+                    onLogout={() =>
+                        setShowLogoutPopup(true)
+                    }
                 />
 
                 <ProfileTabs
@@ -138,6 +159,88 @@ const Profile = () => {
                 }
                 onSubmit={handleChangePasswordSubmit}
             />
+
+            {postToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                            <Trash2 className="h-6 w-6 text-red-500" />
+                        </div>
+
+                        <h2 className="text-lg font-semibold text-foreground">
+                            Delete post?
+                        </h2>
+
+                        <p className="mt-2 text-sm text-muted">
+                            Are you sure you want to delete
+                            this post? This action cannot be
+                            undone.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={() =>
+                                    setPostToDelete(null)
+                                }
+                                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted/10"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={confirmDeletePost}
+                                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showLogoutPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                            <LogOut className="h-6 w-6 text-red-500" />
+                        </div>
+
+                        <h2 className="text-lg font-semibold text-foreground">
+                            Logout?
+                        </h2>
+
+                        <p className="mt-2 text-sm text-muted">
+                            Are you sure you want to logout?
+                            You will need to login again to
+                            access your account.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowLogoutPopup(
+                                        false
+                                    )
+                                }
+                                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleLogout()
+                                }
+                                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
