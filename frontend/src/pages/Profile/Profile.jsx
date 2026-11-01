@@ -8,10 +8,8 @@ import {
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';
-import {
-    getCurrentUser,
-    logoutUser,
-} from '../../api/auth.api';
+import { logoutUser } from '../../api/auth.api';
+import { getCurrentUser } from '../../api/user.api';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import getErrorMessage from '../../utils/getErrorMessage';
 import { useNavigate } from 'react-router-dom';

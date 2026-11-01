@@ -124,9 +124,34 @@ const validatePost = (postTitle, postContent) => {
     }
 };
 
+const validateComment = (comment) => {
+    if (typeof comment !== 'string') {
+        throw new ApiError(
+            400,
+            'Comment must be a string.'
+        );
+    }
+
+    const content = comment.trim();
+
+    if (!content) {
+        throw new ApiError(400, 'Comment cannot be empty.');
+    }
+
+    if (content.length > 1000) {
+        throw new ApiError(
+            400,
+            'Comment cannot exceed 1000 characters.'
+        );
+    }
+
+    return content;
+};
+
 export {
     validatePassword,
     validateUsername,
     validateNewPassword,
     validatePost,
+    validateComment,
 };

@@ -1,27 +1,17 @@
 import { Router } from 'express';
+
 import {
-    registerUser,
-    loginUser,
-    logoutUser,
     getCurrentUser,
     changeUserPassword,
-    refreshAccessToken,
     getUserPosts,
 } from '../controllers/user.controller.js';
+
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/logout', verifyJWT, logoutUser);
-router.get('/current-user', verifyJWT, getCurrentUser);
-router.post(
-    '/change-password',
-    verifyJWT,
-    changeUserPassword
-);
-router.post('/refresh-access-token', refreshAccessToken);
-router.get('/user-posts', verifyJWT, getUserPosts);
+router.get('/me', verifyJWT, getCurrentUser);
+router.patch('/me/password', verifyJWT, changeUserPassword);
+router.get('/me/posts', verifyJWT, getUserPosts);
 
 export default router;

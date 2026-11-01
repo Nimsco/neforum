@@ -2,11 +2,10 @@ import mongoose from 'mongoose';
 
 const commentSchema = new mongoose.Schema(
     {
-        author: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
-            index: true,
         },
         post: {
             type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +15,6 @@ const commentSchema = new mongoose.Schema(
         content: {
             type: String,
             required: true,
-            minlength: 1,
             maxlength: 1000,
             trim: true,
         },
@@ -24,26 +22,12 @@ const commentSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Comment',
             default: null,
-            index: true,
-        },
-        likeCount: {
-            type: Number,
-            default: 0,
-        },
-        replyCount: {
-            type: Number,
-            default: 0,
-        },
-        isDeleted: {
-            type: Boolean,
-            default: false,
         },
     },
     {
         timestamps: true,
     }
 );
-
 commentSchema.index({
     post: 1,
     parentComment: 1,
