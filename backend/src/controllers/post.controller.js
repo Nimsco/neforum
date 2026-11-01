@@ -1,10 +1,14 @@
 import Post from '../models/post.model.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { validatePost } from '../utils/validators.js';
+import {
+    validateComment,
+    validatePost,
+} from '../utils/validators.js';
 import User from '../models/user.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import Like from '../models/like.model.js';
+import Comment from '../models/comment.model.js';
 import mongoose from 'mongoose';
 
 const createPost = asyncHandler(async (req, res) => {
@@ -24,7 +28,7 @@ const createPost = asyncHandler(async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user || user.isBlocked) {
-        throw new ApiError(403,"Post cannot be created.")
+        throw new ApiError(403, 'Post cannot be created.');
     }
 
     const post = new Post({
@@ -79,7 +83,7 @@ const deletePost = asyncHandler(async (req, res) => {
         );
     }
 
-    const postId = req.body?.postId;
+    const postId = req.params.postId;
     if (!postId) {
         throw new ApiError(400, 'Post not available.');
     }
@@ -108,7 +112,9 @@ const deletePost = asyncHandler(async (req, res) => {
 });
 
 const likePost = asyncHandler(async (req, res) => {
-    const postId = req.body?.postId;
+    const postId = req.params.postId;
+
+    console.log(postId);
 
     const user = req.user?.id;
 
@@ -177,7 +183,7 @@ const likePost = asyncHandler(async (req, res) => {
 });
 
 const unlikePost = asyncHandler(async (req, res) => {
-    const postId = req.body?.postId;
+    const postId = req.params.postId;
 
     const user = req.user?.id;
 
@@ -244,10 +250,90 @@ const unlikePost = asyncHandler(async (req, res) => {
         );
 });
 
+const createComment = asyncHandler(async (req, res) => {
+    const postId = req.params.postId;
+    const userId = req.user?.id;
+    const { comment, parentComment } = req.body;
+
+    if (!postId) {
+        throw new ApiError(400, 'Post ID is required.');
+    }
+
+    if (!userId) {
+        throw new ApiError(401, 'Please login first.');
+    }
+
+    // Check whether the post exists
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new ApiError(404, 'Post cannot be found.');
+    }
+
+    // Check whether the user exists and is not blocked
+    const userData = await User.findById(userId);
+
+    if (!userData || userData.isBlocked) {
+        throw new ApiError(
+            403,
+            'You cannot post comments.'
+        );
+    }
+
+    // Validate comment content
+    const content = validateComment(comment);
+
+    // Validate parent comment if this is a reply
+    if (parentComment) {
+        const parent = await Comment.findOne({
+            _id: parentComment,
+            post: postId,
+            parentComment: null,
+        });
+
+        if (!parent) {
+            throw new ApiError(
+                404,
+                'Parent comment cannot be found.'
+            );
+        }
+    }
+
+    // Create comment
+    const newComment = await Comment.create({
+        post: postId,
+        user: userId,
+        content,
+        parentComment: parentComment || null,
+    });
+
+    if (!newComment) {
+        throw new ApiError(
+            400,
+            'Something went wrong while posting comment.'
+        );
+    }
+
+    await Post.findByIdAndUpdate(postId, {
+        $inc: { commentCount: 1 },
+    });
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                newComment,
+                'Comment posted successfully.'
+            )
+        );
+});
+
 export {
     createPost,
     getPosts,
     deletePost,
     likePost,
     unlikePost,
+    createComment,
 };

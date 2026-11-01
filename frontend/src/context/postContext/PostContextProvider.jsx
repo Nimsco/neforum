@@ -7,8 +7,8 @@ import {
 import PostContext from './postContext.js';
 import UserContext from '../userContext/userContext.js';
 import { fetchUserPosts } from '../../api/user.api';
+import { getPosts as fetchAllPosts } from '../../api/post.api.js';
 import {
-    fetchAllPosts,
     createPost as createPostApi,
     deletePost as deletePostAPi,
 } from '../../api/post.api.js';
