@@ -1,9 +1,7 @@
-import {
-    Sidebar,
-    HeroSection,
-    ConversationFeed,
-    CommunityCard,
-} from '../../components/Home';
+import Sidebar from '../../components/Home/Sidebar';
+import HeroSection from '../../components/Home/HeroSection';
+import ConversationFeed from '../../components/Home/ConversationFeed';
+import CommunityCard from '../../components/Home/CommunityCard';
 
 const Home = () => {
     return (

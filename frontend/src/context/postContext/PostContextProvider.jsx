@@ -11,6 +11,8 @@ import { getPosts as fetchAllPosts } from '../../api/post.api.js';
 import {
     createPost as createPostApi,
     deletePost as deletePostAPi,
+    likePost as likePostApi,
+    unlikePost as unlikePostApi,
 } from '../../api/post.api.js';
 import { toast } from 'react-toastify';
 import getErrorMessage from '../../utils/getErrorMessage.js';
@@ -245,30 +247,59 @@ const PostContextProvider = ({ children }) => {
     // ───────────────────────────────────────
     // Like / unlike a post (local toggle)
     // ───────────────────────────────────────
-    const likePost = (postId) => {
-        const toggle = (list) =>
-            list.map((p) => {
-                if ((p._id || p.id) !== postId) return p;
-                const nowLiked = !p.isLiked;
-                return {
-                    ...p,
-                    isLiked: nowLiked,
-                    likeCount: nowLiked
-                        ? (p.likeCount ?? p.upvotes ?? 0) +
-                          1
-                        : Math.max(
-                              0,
-                              (p.likeCount ??
-                                  p.upvotes ??
-                                  0) - 1
-                          ),
-                };
-            });
+    const likePost = async (postId) => {
+        const post =
+            allPosts.find(
+                (item) => (item._id || item.id) === postId
+            ) ||
+            userPosts.find(
+                (item) => (item._id || item.id) === postId
+            );
 
-        setAllPosts(toggle);
-        setUserPosts(toggle);
+        if (!post || !user?.accessToken) return;
+
+        const nextIsLiked = !post.isLiked;
+
+        try {
+            if (nextIsLiked) {
+                await likePostApi(postId, user.accessToken);
+            } else {
+                await unlikePostApi(
+                    postId,
+                    user.accessToken
+                );
+            }
+
+            const updatePost = (posts) =>
+                posts.map((item) => {
+                    if ((item._id || item.id) !== postId)
+                        return item;
+
+                    const currentCount =
+                        item.likeCount ?? item.upvotes ?? 0;
+
+                    return {
+                        ...item,
+                        isLiked: nextIsLiked,
+                        likeCount: Math.max(
+                            0,
+                            currentCount +
+                                (nextIsLiked ? 1 : -1)
+                        ),
+                    };
+                });
+
+            setAllPosts(updatePost);
+            setUserPosts(updatePost);
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    'Could not update like.'
+                )
+            );
+        }
     };
-
     // ───────────────────────────────────────
     // Save / unsave a post (local toggle)
     // ───────────────────────────────────────
@@ -281,6 +312,27 @@ const PostContextProvider = ({ children }) => {
 
         setAllPosts(toggle);
         setUserPosts(toggle);
+    };
+
+    // Keep comment totals current on feed and profile post cards.
+    const changePostCommentCount = (postId, amount) => {
+        const update = (list) =>
+            list.map((post) => {
+                if ((post._id || post.id) !== postId)
+                    return post;
+                return {
+                    ...post,
+                    commentCount: Math.max(
+                        0,
+                        (post.commentCount ??
+                            post.replies ??
+                            0) + amount
+                    ),
+                };
+            });
+
+        setAllPosts(update);
+        setUserPosts(update);
     };
 
     // ───────────────────────────────────────
@@ -319,6 +371,7 @@ const PostContextProvider = ({ children }) => {
         deletePost,
         likePost,
         savePost,
+        changePostCommentCount,
         resetPost,
 
         // Compatibility aliases

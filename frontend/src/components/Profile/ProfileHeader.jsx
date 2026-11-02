@@ -1,6 +1,10 @@
-import { CalendarDays, Shield } from 'lucide-react';
-import ProfileAvatar from './ProfileAvatar';
-import ProfileActions from './ProfileActions';
+import {
+    CalendarDays,
+    KeyRound,
+    LogOut,
+    Shield,
+    User,
+} from 'lucide-react';
 
 /**
  * ProfileHeader
@@ -32,6 +36,9 @@ const ProfileHeader = ({
     onChangePassword,
     onLogout,
 }) => {
+    const initial = user?.username
+        ?.charAt(0)
+        ?.toUpperCase();
     const joinDate = user?.createdAt
         ? new Date(user.createdAt).toLocaleDateString(
               'en-US',
@@ -47,10 +54,13 @@ const ProfileHeader = ({
             {/* Top row: avatar + identity + action buttons */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                    <ProfileAvatar
-                        username={user?.username}
-                        size="lg"
-                    />
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/15 text-3xl font-bold text-primary select-none ring-4 ring-card shadow-md">
+                        {initial ? (
+                            <span>{initial}</span>
+                        ) : (
+                            <User className="h-10 w-10" />
+                        )}
+                    </div>
 
                     <div className="flex flex-col items-center sm:items-start gap-1.5">
                         {/* Username */}
@@ -80,10 +90,27 @@ const ProfileHeader = ({
                 </div>
 
                 {/* Profile Action Buttons */}
-                <ProfileActions
-                    onChangePassword={onChangePassword}
-                    onLogout={onLogout}
-                />
+                <div className="flex flex-wrap items-center gap-2.5 sm:self-start">
+                    <button
+                        type="button"
+                        onClick={onChangePassword}
+                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/80 px-3.5 py-2 text-xs font-medium text-foreground transition-all hover:bg-card hover:border-foreground/20 hover:shadow-sm cursor-pointer"
+                        aria-label="Change Password"
+                    >
+                        <KeyRound className="h-3.5 w-3.5 text-muted" />
+                        <span>Change Password</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onLogout}
+                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/80 px-3.5 py-2 text-xs font-medium text-muted transition-all hover:bg-error/10 hover:text-error hover:border-error/20 cursor-pointer"
+                        aria-label="Log out"
+                    >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>Log out</span>
+                    </button>
+                </div>
             </div>
 
             {/* Stats row */}

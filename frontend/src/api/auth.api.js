@@ -23,11 +23,15 @@ const refreshAccessToken = async () => {
 };
 
 const logoutUser = async (accessToken) => {
-    const response = await api.get('/auth/logout', {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    });
+    const response = await api.post(
+        '/auth/logout',
+        {},
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
     return response.data.data;
 };
 

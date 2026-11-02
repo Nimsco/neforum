@@ -114,8 +114,6 @@ const deletePost = asyncHandler(async (req, res) => {
 const likePost = asyncHandler(async (req, res) => {
     const postId = req.params.postId;
 
-    console.log(postId);
-
     const user = req.user?.id;
 
     if (!postId) {
@@ -329,6 +327,149 @@ const createComment = asyncHandler(async (req, res) => {
         );
 });
 
+const deleteComment = asyncHandler(async (req, res) => {
+    const commentId = req.params.commentId;
+    const userId = req.user?.id;
+
+    if (!userId) {
+        throw new ApiError(401, 'Please login first.');
+    }
+
+    if (!commentId) {
+        throw new ApiError(400, 'Comment ID is required.');
+    }
+
+    // Find comment and its owner
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+        throw new ApiError(404, 'Comment not found.');
+    }
+
+    // Check ownership
+    if (!comment.user.equals(userId)) {
+        throw new ApiError(
+            403,
+            'You cannot delete this comment.'
+        );
+    }
+
+    // Delete comment
+    const deletedComment = await Comment.deleteOne({
+        _id: commentId,
+        user: userId,
+    });
+
+    if (deletedComment.deletedCount !== 1) {
+        throw new ApiError(
+            400,
+            'Comment could not be deleted.'
+        );
+    }
+
+    // Decrease post comment count
+    await Post.updateOne(
+        { _id: comment.post },
+        { $inc: { commentCount: -1 } }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                'Comment deleted successfully.'
+            )
+        );
+});
+
+const updateComment = asyncHandler(async (req, res) => {
+    const newComment = req.body?.newComment;
+
+    const userId = req.user?.id;
+    const commentId = req.params.commentId;
+
+    if (!userId) {
+        throw new ApiError(401, 'Please login first.');
+    }
+
+    if (!commentId) {
+        throw new ApiError(404, 'Comment not found.');
+    }
+
+    const content = validateComment(newComment);
+
+    //find comment and its owner
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+        throw new ApiError(404, 'Comment not found.');
+    }
+
+    //check ownership
+    if (!comment.user.equals(userId)) {
+        throw new ApiError(
+            403,
+            'You cannot edit this comment.'
+        );
+    }
+
+    const isUpdated = await Comment.updateOne(
+        { _id: commentId, user: userId },
+        { $set: { content: content } }
+    );
+
+    if (isUpdated.matchedCount === 0) {
+        throw new ApiError(
+            400,
+            'Comment could not be updated.'
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { content },
+                'Comment updated successfully.'
+            )
+        );
+});
+
+const fetchPostsComments = asyncHandler(
+    async (req, res) => {
+        const postId = req.params.postId;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            throw new ApiError(401, 'Please login first.');
+        }
+
+        if (!postId) {
+            throw new ApiError(400, 'Post ID is required.');
+        }
+
+        const comments = await Comment.find({
+            post: postId,
+        })
+            .populate('user', 'username')
+            .sort({ createdAt: -1 })
+            .limit(10);
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { comments },
+                    'Comments fetched successfully.'
+                )
+            );
+    }
+);
+
 export {
     createPost,
     getPosts,
@@ -336,4 +477,7 @@ export {
     likePost,
     unlikePost,
     createComment,
+    deleteComment,
+    updateComment,
+    fetchPostsComments,
 };

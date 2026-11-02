@@ -65,13 +65,17 @@ const CommentItem = ({
     };
 
     const authorName =
+        comment?.user?.username ||
         comment?.author?.username ||
         comment?.authorName ||
         'Anonymous';
     const initial = authorName.charAt(0).toUpperCase();
+    const isReply = Boolean(comment?.parentComment);
 
     return (
-        <div className="group flex gap-3 py-3.5 px-4 transition-colors hover:bg-foreground/[0.02] rounded-xl">
+        <div
+            className={`group flex gap-3 py-3.5 px-4 transition-colors hover:bg-foreground/2 rounded-xl ${isReply ? 'ml-7 border-l border-border' : ''}`}
+        >
             {/* Avatar / Initial */}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                 {initial}
@@ -107,7 +111,7 @@ const CommentItem = ({
                 </div>
 
                 {/* Content */}
-                <p className="mt-1 text-xs sm:text-sm text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+                <p className="mt-1 text-xs sm:text-sm text-foreground/90 leading-relaxed wrap-break-word whitespace-pre-wrap">
                     {comment?.content}
                 </p>
 
