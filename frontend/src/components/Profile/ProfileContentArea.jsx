@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import ProfileCommentCard from './ProfileCommentCard';
 import ProfileSavedCard from './ProfileSavedCard';
-import { CommentModal } from '../Comments';
+import CommentModal from '../Comments/CommentModal';
 import PostContext from '../../context/postContext/postContext';
 import PostCard from '../PostCard';
 

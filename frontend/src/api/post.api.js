@@ -85,6 +85,52 @@ const createComment = async (
     return response.data.data;
 };
 
+const deleteComment = async (accessToken, commentId) => {
+    const response = await api.delete(
+        `/posts/${commentId}/comments`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+
+    return response.data.data;
+};
+
+const updateComment = async (
+    accessToken,
+    commentId,
+    newComment
+) => {
+    const response = await api.patch(
+        `/posts/${commentId}/comments`,
+        {
+            newComment,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+
+    return response.data.data;
+};
+
+const fetchPostsComments = async (accessToken, postId) => {
+    const response = await api.get(
+        `/posts/${postId}/comments`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+
+    return response.data.data;
+};
+
 export {
     getPosts,
     createPost,
@@ -92,4 +138,7 @@ export {
     likePost,
     unlikePost,
     createComment,
+    deleteComment,
+    updateComment,
+    fetchPostsComments,
 };

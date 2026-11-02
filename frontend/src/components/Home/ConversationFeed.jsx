@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, PenLine } from 'lucide-react';
 import PostCard from '../PostCard';
-import { CommentModal } from '../Comments';
+import CommentModal from '../Comments/CommentModal';
 import PostContext from '../../context/postContext/postContext';
 
 /**

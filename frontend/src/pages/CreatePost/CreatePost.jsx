@@ -1,12 +1,10 @@
 import { useContext, useState } from 'react';
-import {
-    CreatePostHeader,
-    CreatePostTabs,
-    CreatePostEditor,
-    CreatePostPreview,
-    CreatePostActions,
-    CreatePostReminder,
-} from '../../components/CreatePost';
+import CreatePostHeader from '../../components/CreatePost/CreatePostHeader';
+import CreatePostTabs from '../../components/CreatePost/CreatePostTabs';
+import CreatePostEditor from '../../components/CreatePost/CreatePostEditor';
+import CreatePostPreview from '../../components/CreatePost/CreatePostPreview';
+import CreatePostActions from '../../components/CreatePost/CreatePostActions';
+import CreatePostReminder from '../../components/CreatePost/CreatePostReminder';
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';

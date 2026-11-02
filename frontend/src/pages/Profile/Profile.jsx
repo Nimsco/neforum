@@ -1,10 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import {
-    ProfileHeader,
-    ProfileTabs,
-    ProfileContentArea,
-    ChangePasswordModal,
-} from '../../components/Profile';
+import ProfileHeader from '../../components/Profile/ProfileHeader';
+import ProfileTabs from '../../components/Profile/ProfileTabs';
+import ProfileContentArea from '../../components/Profile/ProfileContentArea';
+import ChangePasswordModal from '../../components/Profile/ChangePasswordModal';
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';

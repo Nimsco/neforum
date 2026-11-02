@@ -1,36 +1,51 @@
 import { useState } from 'react';
 import { Send, Shield } from 'lucide-react';
 
-/**
- * CommentInput
- *
- * Bottom composer area for typing and submitting comments.
- *
- * @param {function} onSubmit  - Callback receiving the comment text e.g. onSubmit(text)
- * @param {boolean}  isPosting - Loading state when submitting
- */
-const CommentInput = ({ onSubmit, isPosting = false }) => {
+const CommentComposer = ({
+    isPosting,
+    onCancelReply,
+    onSubmit,
+    replyTo,
+}) => {
     const [content, setContent] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const trimmed = content.trim();
-        if (!trimmed || isPosting) return;
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const text = content.trim();
+        if (!text || isPosting) return;
 
-        onSubmit?.(trimmed);
-        setContent('');
+        const posted = await onSubmit(text);
+        if (posted) setContent('');
     };
+
+    const replyAuthor =
+        replyTo?.user?.username ||
+        replyTo?.author?.username ||
+        'Anonymous';
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="border-t border-border bg-card/60 p-4 shrink-0"
+            className="shrink-0 border-t border-border bg-card/60 p-4"
         >
+            {replyTo && (
+                <div className="mb-2 flex items-center justify-between text-xs text-muted">
+                    <span>Replying to {replyAuthor}</span>
+                    <button
+                        type="button"
+                        onClick={onCancelReply}
+                        className="cursor-pointer hover:text-foreground"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
+
             <div className="relative">
                 <textarea
                     value={content}
-                    onChange={(e) =>
-                        setContent(e.target.value)
+                    onChange={(event) =>
+                        setContent(event.target.value)
                     }
                     placeholder="Write an anonymous comment..."
                     maxLength={1000}
@@ -39,14 +54,12 @@ const CommentInput = ({ onSubmit, isPosting = false }) => {
                 />
 
                 <div className="mt-2 flex items-center justify-between gap-2">
-                    {/* Anonymous hint */}
                     <div className="flex items-center gap-1.5 text-[11px] text-muted">
                         <Shield className="h-3 w-3 text-success" />
                         <span>Posting anonymously</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Character count */}
                         <span
                             className={`text-[11px] ${
                                 content.length > 950
@@ -56,8 +69,6 @@ const CommentInput = ({ onSubmit, isPosting = false }) => {
                         >
                             {content.length}/1000
                         </span>
-
-                        {/* Submit button */}
                         <button
                             type="submit"
                             disabled={
@@ -79,4 +90,4 @@ const CommentInput = ({ onSubmit, isPosting = false }) => {
     );
 };
 
-export default CommentInput;
+export default CommentComposer;
