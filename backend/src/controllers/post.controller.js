@@ -9,6 +9,8 @@ import User from '../models/user.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import Like from '../models/like.model.js';
 import Comment from '../models/comment.model.js';
+import CommentLike from '../models/commentLike.model.js';
+import SavedPost from '../models/savedPost.model.js';
 import mongoose from 'mongoose';
 
 const createPost = asyncHandler(async (req, res) => {
@@ -61,17 +63,75 @@ const getPosts = asyncHandler(async (req, res) => {
 
     const posts = await Post.find()
         .populate('author', 'username')
-        .limit(10);
+        .sort({ createdAt: -1 });
+
+    const [likedPosts, savedPosts] = await Promise.all([
+        Like.find({ user }).select('post'),
+        SavedPost.find({ user }).select('post'),
+    ]);
+
+    const likedPostIds = new Set(
+        likedPosts.map((like) => like.post.toString())
+    );
+    const savedPostIds = new Set(
+        savedPosts.map((saved) => saved.post.toString())
+    );
+
+    const postsWithLikeStatus = posts.map((post) => ({
+        ...post.toObject(),
+        isLiked: likedPostIds.has(post._id.toString()),
+        isSaved: savedPostIds.has(post._id.toString()),
+    }));
 
     return res
         .status(200)
         .json(
             new ApiResponse(
                 200,
-                posts,
+                { posts: postsWithLikeStatus },
                 'Posts fetched successfully'
             )
         );
+});
+
+const getPostById = asyncHandler(async (req, res) => {
+    const userId = req.user?.id;
+    const { postId } = req.params;
+
+    if (!userId) {
+        throw new ApiError(
+            401,
+            'User must be logged in to view posts.'
+        );
+    }
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+        throw new ApiError(400, 'Post ID is invalid.');
+    }
+
+    const post = await Post.findById(postId).populate(
+        'author',
+        'username'
+    );
+    if (!post) throw new ApiError(404, 'Post not found.');
+
+    const [isLiked, isSaved] = await Promise.all([
+        Like.exists({ post: postId, user: userId }),
+        SavedPost.exists({ post: postId, user: userId }),
+    ]);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                post: {
+                    ...post.toObject(),
+                    isLiked: Boolean(isLiked),
+                    isSaved: Boolean(isSaved),
+                },
+            },
+            'Post fetched successfully.'
+        )
+    );
 });
 
 const deletePost = asyncHandler(async (req, res) => {
@@ -99,6 +159,23 @@ const deletePost = asyncHandler(async (req, res) => {
             'Post not found or you are not authorized to delete this post.'
         );
     }
+
+    const comments = await Comment.find({
+        post: postId,
+    }).select('_id');
+    const commentIds = comments.map(
+        (comment) => comment._id
+    );
+    if (commentIds.length) {
+        await CommentLike.deleteMany({
+            comment: { $in: commentIds },
+        });
+        await Comment.deleteMany({
+            _id: { $in: commentIds },
+        });
+    }
+    await Like.deleteMany({ post: postId });
+    await SavedPost.deleteMany({ post: postId });
 
     return res
         .status(200)
@@ -248,6 +325,116 @@ const unlikePost = asyncHandler(async (req, res) => {
         );
 });
 
+const setPostSaved = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+    const shouldSave = req.method === 'POST';
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+        throw new ApiError(400, 'Post ID is invalid.');
+    }
+    const post = await Post.findById(postId);
+    if (!post) throw new ApiError(404, 'Post not found.');
+
+    if (shouldSave) {
+        try {
+            await SavedPost.create({
+                post: postId,
+                user: userId,
+            });
+        } catch (error) {
+            if (error?.code === 11000) {
+                throw new ApiError(
+                    400,
+                    'Post already saved.'
+                );
+            }
+            throw error;
+        }
+    } else {
+        const removed = await SavedPost.findOneAndDelete({
+            post: postId,
+            user: userId,
+        });
+        if (!removed) {
+            throw new ApiError(400, 'Post is not saved.');
+        }
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { isSaved: shouldSave },
+                shouldSave
+                    ? 'Post saved successfully.'
+                    : 'Post removed from saved posts.'
+            )
+        );
+});
+
+const setCommentLike = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    const { commentId } = req.params;
+    const shouldLike = req.method === 'POST';
+
+    if (!mongoose.Types.ObjectId.isValid(commentId)) {
+        throw new ApiError(400, 'Comment ID is invalid.');
+    }
+    const comment = await Comment.findById(commentId);
+    if (!comment)
+        throw new ApiError(404, 'Comment not found.');
+
+    if (shouldLike) {
+        try {
+            await CommentLike.create({
+                comment: commentId,
+                user: userId,
+            });
+        } catch (error) {
+            if (error?.code === 11000) {
+                throw new ApiError(
+                    400,
+                    'Comment already liked.'
+                );
+            }
+            throw error;
+        }
+    } else {
+        const removed = await CommentLike.findOneAndDelete({
+            comment: commentId,
+            user: userId,
+        });
+        if (!removed) {
+            throw new ApiError(
+                400,
+                'Comment is not liked.'
+            );
+        }
+    }
+
+    const [likeCount, isLiked] = await Promise.all([
+        CommentLike.countDocuments({ comment: commentId }),
+        CommentLike.exists({
+            comment: commentId,
+            user: userId,
+        }),
+    ]);
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { likeCount, isLiked: Boolean(isLiked) },
+                shouldLike
+                    ? 'Comment liked successfully.'
+                    : 'Comment unliked successfully.'
+            )
+        );
+});
+
 const createComment = asyncHandler(async (req, res) => {
     const postId = req.params.postId;
     const userId = req.user?.id;
@@ -355,12 +542,21 @@ const deleteComment = asyncHandler(async (req, res) => {
     }
 
     // Delete comment
-    const deletedComment = await Comment.deleteOne({
-        _id: commentId,
-        user: userId,
+    const childComments = await Comment.find({
+        parentComment: commentId,
+    }).select('_id');
+    const commentIds = [
+        comment._id,
+        ...childComments.map((child) => child._id),
+    ];
+    await CommentLike.deleteMany({
+        comment: { $in: commentIds },
+    });
+    const deletedComments = await Comment.deleteMany({
+        _id: { $in: commentIds },
     });
 
-    if (deletedComment.deletedCount !== 1) {
+    if (!deletedComments.deletedCount) {
         throw new ApiError(
             400,
             'Comment could not be deleted.'
@@ -370,7 +566,11 @@ const deleteComment = asyncHandler(async (req, res) => {
     // Decrease post comment count
     await Post.updateOne(
         { _id: comment.post },
-        { $inc: { commentCount: -1 } }
+        {
+            $inc: {
+                commentCount: -deletedComments.deletedCount,
+            },
+        }
     );
 
     return res
@@ -455,15 +655,60 @@ const fetchPostsComments = asyncHandler(
             post: postId,
         })
             .populate('user', 'username')
-            .sort({ createdAt: -1 })
-            .limit(10);
+            .sort({ createdAt: -1 });
+
+        const commentIds = comments.map(
+            (comment) => comment._id
+        );
+        const [counts, likedComments] = await Promise.all([
+            CommentLike.aggregate([
+                {
+                    $match: {
+                        comment: { $in: commentIds },
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$comment',
+                        count: { $sum: 1 },
+                    },
+                },
+            ]),
+            CommentLike.find({
+                comment: { $in: commentIds },
+                user: userId,
+            }).select('comment'),
+        ]);
+
+        const countsByCommentId = new Map(
+            counts.map((entry) => [
+                String(entry._id),
+                entry.count,
+            ])
+        );
+        const likedCommentIds = new Set(
+            likedComments.map((like) =>
+                String(like.comment)
+            )
+        );
+        const commentsWithLikes = comments.map(
+            (comment) => {
+                const id = String(comment._id);
+                return {
+                    ...comment.toObject(),
+                    likeCount:
+                        countsByCommentId.get(id) || 0,
+                    isLiked: likedCommentIds.has(id),
+                };
+            }
+        );
 
         return res
             .status(200)
             .json(
                 new ApiResponse(
                     200,
-                    { comments },
+                    { comments: commentsWithLikes },
                     'Comments fetched successfully.'
                 )
             );
@@ -473,6 +718,7 @@ const fetchPostsComments = asyncHandler(
 export {
     createPost,
     getPosts,
+    getPostById,
     deletePost,
     likePost,
     unlikePost,
@@ -480,4 +726,6 @@ export {
     deleteComment,
     updateComment,
     fetchPostsComments,
+    setCommentLike,
+    setPostSaved,
 };

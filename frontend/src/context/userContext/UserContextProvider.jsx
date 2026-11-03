@@ -9,7 +9,7 @@ const UserContextProvider = ({ children }) => {
 
     const resetUser = () => {
         setUser(null);
-        setIsAuthLoading(true);
+        setIsAuthLoading(false);
     };
 
     useEffect(() => {
@@ -21,7 +21,7 @@ const UserContextProvider = ({ children }) => {
                     ...response.user,
                     accessToken: response.accessToken,
                 });
-            } catch (error) {
+            } catch {
                 setUser(null);
             } finally {
                 setIsAuthLoading(false);

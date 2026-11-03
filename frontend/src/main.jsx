@@ -1,21 +1,27 @@
 import { createRoot } from 'react-dom/client';
+import { Suspense } from 'react';
 import './index.css';
 import {
     createBrowserRouter,
     RouterProvider,
 } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import Login from './pages/Login/Login.jsx';
-import Register from './pages/Register/Register.jsx';
-import About from './pages/About/About.jsx';
-import Contact from './pages/Contact/Contact.jsx';
-import Home from './pages/Home/Home.jsx';
-import Profile from './pages/Profile/Profile.jsx';
-import Reports from './pages/Reports/Reports.jsx';
-import CreatePost from './pages/CreatePost/CreatePost.jsx';
 import UserContextProvider from './context/userContext/UserContextProvider.jsx';
 import PostContextProvider from './context/postContext/PostContextProvider.jsx';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
+import NotFound from './NotFound.jsx';
+import { LoadingScreen } from './components/LoadingScreen.jsx';
+import {
+    Login,
+    Register,
+    About,
+    Contact,
+    Home,
+    Profile,
+    Reports,
+    CreatePost,
+    PostDetails,
+} from './routes/lazyPages.jsx';
 
 const router = createBrowserRouter([
     {
@@ -53,7 +59,15 @@ const router = createBrowserRouter([
                 path: '/create-post',
                 element: <CreatePost />,
             },
+            {
+                path: '/posts/:postId',
+                element: <PostDetails />,
+            },
         ],
+    },
+    {
+        path: '*',
+        element: <NotFound />,
     },
 ]);
 
@@ -61,7 +75,9 @@ createRoot(document.getElementById('root')).render(
     <>
         <UserContextProvider>
             <PostContextProvider>
-                <RouterProvider router={router} />
+                <Suspense fallback={<LoadingScreen />}>
+                    <RouterProvider router={router} />
+                </Suspense>
             </PostContextProvider>
         </UserContextProvider>
 

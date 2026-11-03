@@ -15,6 +15,10 @@ import { generateRecoveryKey } from '../utils/generateRecoveryKey.js';
 import bcrypt from 'bcryptjs';
 import { verifyRefreshToken } from '../utils/verifyRefreshToken.js';
 import Post from '../models/post.model.js';
+import Comment from '../models/comment.model.js';
+import Like from '../models/like.model.js';
+import CommentLike from '../models/commentLike.model.js';
+import SavedPost from '../models/savedPost.model.js';
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, password, confirmPassword } =
@@ -24,7 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     validatePassword(password, confirmPassword);
 
-    const recoveryKey = generateRecoveryKey(8);
+    const recoveryKey = generateRecoveryKey(16);
 
     const user = new User({
         username,
@@ -164,10 +168,21 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const changeUserPassword = asyncHandler(
     async (req, res) => {
-        const { recoveryKey, newPassword } = req.body;
+        const {
+            recoveryKey,
+            newPassword,
+            confirmNewPassword,
+        } = req.body;
 
         if (!recoveryKey || !newPassword) {
             throw new ApiError(400, 'No Recovery Key.');
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            throw new ApiError(
+                400,
+                'Passwords do not match.'
+            );
         }
 
         const userId = req.user._id;
@@ -259,20 +274,123 @@ const refreshAccessToken = asyncHandler(
 );
 
 const getUserPosts = asyncHandler(async (req, res) => {
-    const posts = await Post.find({
-        author: req.user?.id,
-    });
+    const userId = req.user?.id;
+    const [posts, likes, saved] = await Promise.all([
+        Post.find({ author: userId })
+            .populate('author', 'username')
+            .sort({ createdAt: -1 }),
+        Like.find({ user: userId }).select('post'),
+        SavedPost.find({ user: userId }).select('post'),
+    ]);
+    const likedIds = new Set(
+        likes.map((like) => String(like.post))
+    );
+    const savedIds = new Set(
+        saved.map((item) => String(item.post))
+    );
+    const postsWithState = posts.map((post) => ({
+        ...post.toObject(),
+        isLiked: likedIds.has(String(post._id)),
+        isSaved: savedIds.has(String(post._id)),
+    }));
 
     return res.status(200).json(
         new ApiResponse(
             200,
             {
-                posts,
-                postCount: posts.length,
+                posts: postsWithState,
+                postCount: postsWithState.length,
             },
             'Posts fetched successfully.'
         )
     );
+});
+
+const fetchUserStats = asyncHandler(async (req, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+        throw new ApiError(401, 'Please login first.');
+    }
+
+    const [postCount, commentCount, likeCount] =
+        await Promise.all([
+            Post.countDocuments({ author: userId }),
+            Comment.countDocuments({ user: userId }),
+            Like.countDocuments({ user: userId }),
+        ]);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                postCount,
+                commentCount,
+                likeCount,
+            },
+            'Stats fetched successfully.'
+        )
+    );
+});
+
+const fetchUserComments = asyncHandler(async (req, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+        throw new ApiError(401, 'Please login first.');
+    }
+
+    const comments = await Comment.find({ user: userId })
+        .populate('post', 'title likeCount commentCount')
+        .populate('parentComment', 'content')
+        .sort({ createdAt: -1 });
+
+    const commentIds = comments.map(
+        (comment) => comment._id
+    );
+    const [counts, likedComments] = await Promise.all([
+        CommentLike.aggregate([
+            { $match: { comment: { $in: commentIds } } },
+            {
+                $group: {
+                    _id: '$comment',
+                    count: { $sum: 1 },
+                },
+            },
+        ]),
+        CommentLike.find({
+            comment: { $in: commentIds },
+            user: userId,
+        }).select('comment'),
+    ]);
+
+    const countsByCommentId = new Map(
+        counts.map((entry) => [
+            String(entry._id),
+            entry.count,
+        ])
+    );
+    const likedCommentIds = new Set(
+        likedComments.map((like) => String(like.comment))
+    );
+    const commentsWithLikes = comments.map((comment) => {
+        const id = String(comment._id);
+        return {
+            ...comment.toObject(),
+            likeCount: countsByCommentId.get(id) || 0,
+            isLiked: likedCommentIds.has(id),
+        };
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { comments: commentsWithLikes },
+                'Comments fetched successfully.'
+            )
+        );
 });
 
 export {
@@ -283,4 +401,6 @@ export {
     changeUserPassword,
     refreshAccessToken,
     getUserPosts,
+    fetchUserComments,
+    fetchUserStats,
 };

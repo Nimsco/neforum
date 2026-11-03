@@ -3,6 +3,13 @@ import { ApiResponse } from './ApiResponse.js';
 import User from '../models/user.model.js';
 
 const validatePassword = (password, confirmPassword) => {
+    if (
+        typeof password !== 'string' ||
+        typeof confirmPassword !== 'string'
+    ) {
+        throw new ApiError(400, 'Password is required.');
+    }
+
     if (password !== confirmPassword) {
         throw new ApiError(400, 'Passwords do not match');
     }
@@ -37,6 +44,10 @@ const validatePassword = (password, confirmPassword) => {
 };
 
 const validateNewPassword = (password) => {
+    if (typeof password !== 'string') {
+        throw new ApiError(400, 'Password is required.');
+    }
+
     if (password.length < 6) {
         throw new ApiError(
             400,
@@ -67,6 +78,10 @@ const validateNewPassword = (password) => {
 };
 
 const validateUsername = async (inputUsername) => {
+    if (typeof inputUsername !== 'string') {
+        throw new ApiError(400, 'Username is required.');
+    }
+
     const user = await User.findOne({
         username: inputUsername,
     });
@@ -95,6 +110,16 @@ const validateUsername = async (inputUsername) => {
 };
 
 const validatePost = (postTitle, postContent) => {
+    if (
+        typeof postTitle !== 'string' ||
+        typeof postContent !== 'string'
+    ) {
+        throw new ApiError(
+            400,
+            'Title and content are required.'
+        );
+    }
+
     const title = postTitle.trim();
     const content = postContent.trim();
 

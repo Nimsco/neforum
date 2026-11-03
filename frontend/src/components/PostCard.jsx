@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Heart,
     MessageSquare,
@@ -52,7 +53,6 @@ const formatPostTime = (dateStr) => {
  * @param {object}   post       - The post data object
  * @param {boolean}  showDelete - Control visibility of the delete button
  * @param {function} onLike     - Optional callback when like button is clicked
- * @param {function} onComment  - Callback when comment button is clicked
  * @param {function} onSave     - Optional callback when save button is clicked
  * @param {function} onShare    - Callback when share button is clicked
  * @param {function} onDelete   - Optional callback when delete button is clicked
@@ -63,7 +63,6 @@ const PostCard = ({
     post,
     showDelete = true,
     onLike,
-    onComment,
     onSave,
     onShare,
     onDelete,
@@ -74,6 +73,8 @@ const PostCard = ({
     const likePost = postContext?.likePost;
     const savePost = postContext?.savePost;
     const deletePost = postContext?.deletePost;
+    const navigate = useNavigate();
+    const location = useLocation();
 
     // Derived states from post object (single source of truth)
     const isLiked = Boolean(post?.isLiked);
@@ -119,15 +120,42 @@ const PostCard = ({
         }
     };
 
+    const openPostDetails = () => {
+        const postId = post?._id || post?.id;
+        if (!postId) return;
+
+        navigate(`/posts/${postId}`, {
+            state: { post, from: location.pathname },
+        });
+    };
+
+    const handlePostClick = () => {
+        if (onClick) {
+            onClick(post);
+            return;
+        }
+        openPostDetails();
+    };
+
+    const handlePostKeyDown = (event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handlePostClick();
+        }
+    };
+
     const timeDisplay =
         post?.time || formatPostTime(post?.createdAt);
 
     return (
         <div
-            onClick={() => onClick?.(post)}
-            className={`w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md ${
-                onClick ? 'cursor-pointer' : ''
-            } ${className}`}
+            onClick={handlePostClick}
+            onKeyDown={handlePostKeyDown}
+            role="link"
+            tabIndex={0}
+            aria-label={`Open post: ${post?.title || 'Post details'}`}
+            className={`w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md cursor-pointer ${className}`}
         >
             {/* ── Metadata row ── */}
             <div className="flex items-center justify-between gap-2 text-xs text-muted mb-2">
@@ -198,7 +226,7 @@ const PostCard = ({
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        onComment?.(post);
+                        openPostDetails();
                     }}
                     className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-primary/10 hover:text-primary cursor-pointer"
                     aria-label="Comment on post"

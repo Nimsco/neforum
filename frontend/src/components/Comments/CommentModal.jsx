@@ -5,6 +5,8 @@ import {
     createComment,
     deleteComment,
     fetchPostsComments,
+    likeComment,
+    unlikeComment,
 } from '../../api/post.api';
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
@@ -12,34 +14,46 @@ import getErrorMessage from '../../utils/getErrorMessage';
 import CommentList from './CommentList';
 import CommentComposer from './CommentComposer';
 
-const CommentModal = ({ isOpen, onClose, post }) => {
+const CommentModal = ({
+    isOpen,
+    onClose,
+    post,
+    showPostDetails = false,
+}) => {
     const { user } = useContext(UserContext);
     const { changePostCommentCount } =
         useContext(PostContext);
     const [comments, setComments] = useState([]);
-    const [commentCount, setCommentCount] = useState(0);
+    const [commentCount, setCommentCount] = useState(
+        post?.commentCount ?? 0
+    );
     const [replyTo, setReplyTo] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [loadResult, setLoadResult] = useState(null);
     const [isPosting, setIsPosting] = useState(false);
 
     const postId = post?._id || post?.id;
     const accessToken = user?.accessToken;
+    const isLoading = Boolean(
+        isOpen &&
+        postId &&
+        accessToken &&
+        (loadResult?.postId !== postId ||
+            loadResult.loading)
+    );
+    const postDate = post?.createdAt
+        ? new Date(post.createdAt).toLocaleString('en-US', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+          })
+        : null;
 
     // Load comments whenever the selected post changes or the modal opens.
     useEffect(() => {
         if (!isOpen || !postId || !accessToken) {
-            setIsLoading(false);
-            if (!isOpen) {
-                setComments([]);
-                setReplyTo(null);
-            }
             return;
         }
 
         let cancelled = false;
-        setComments([]);
-        setReplyTo(null);
-        setIsLoading(true);
 
         const loadComments = async () => {
             try {
@@ -56,11 +70,19 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                 if (!cancelled) {
                     setComments(list);
                     setCommentCount(
-                        (count) => count || list.length
+                        post?.commentCount ?? list.length
                     );
+                    setLoadResult({
+                        postId,
+                        loading: false,
+                    });
                 }
             } catch (error) {
                 if (!cancelled) {
+                    setLoadResult({
+                        postId,
+                        loading: false,
+                    });
                     toast.error(
                         getErrorMessage(
                             error,
@@ -68,8 +90,6 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                         )
                     );
                 }
-            } finally {
-                if (!cancelled) setIsLoading(false);
             }
         };
 
@@ -77,13 +97,7 @@ const CommentModal = ({ isOpen, onClose, post }) => {
         return () => {
             cancelled = true;
         };
-    }, [accessToken, isOpen, postId]);
-
-    // Keep the count in sync with the selected post and local changes.
-    useEffect(() => {
-        if (isOpen)
-            setCommentCount(post?.commentCount ?? 0);
-    }, [isOpen, post?.commentCount, postId]);
+    }, [accessToken, isOpen, postId, post?.commentCount]);
 
     // Escape closes the dialog and the page behind it cannot scroll.
     useEffect(() => {
@@ -130,6 +144,8 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                               _id: user?._id || user?.id,
                               username: user?.username,
                           },
+                likeCount: created.likeCount ?? 0,
+                isLiked: created.isLiked ?? false,
             };
 
             setComments((previous) =>
@@ -160,16 +176,38 @@ const CommentModal = ({ isOpen, onClose, post }) => {
 
         try {
             await deleteComment(accessToken, commentId);
+            const removedIds = new Set([String(commentId)]);
+            if (!comment.parentComment) {
+                comments.forEach((item) => {
+                    const parentId =
+                        item.parentComment?._id ||
+                        item.parentComment?.id ||
+                        item.parentComment;
+                    if (
+                        String(parentId) ===
+                        String(commentId)
+                    ) {
+                        removedIds.add(
+                            String(item._id || item.id)
+                        );
+                    }
+                });
+            }
             setComments((previous) =>
                 previous.filter(
                     (item) =>
-                        (item._id || item.id) !== commentId
+                        !removedIds.has(
+                            String(item._id || item.id)
+                        )
                 )
             );
             setCommentCount((count) =>
-                Math.max(0, count - 1)
+                Math.max(0, count - removedIds.size)
             );
-            changePostCommentCount(postId, -1);
+            changePostCommentCount(
+                postId,
+                -removedIds.size
+            );
         } catch (error) {
             toast.error(
                 getErrorMessage(
@@ -177,6 +215,42 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                     'Could not delete comment.'
                 )
             );
+        }
+    };
+
+    const handleLikeComment = async (
+        comment,
+        shouldLike
+    ) => {
+        const commentId = comment?._id || comment?.id;
+        if (!commentId || !accessToken) return;
+
+        try {
+            const result = shouldLike
+                ? await likeComment(commentId, accessToken)
+                : await unlikeComment(
+                      commentId,
+                      accessToken
+                  );
+            setComments((previous) =>
+                previous.map((item) =>
+                    (item._id || item.id) === commentId
+                        ? {
+                              ...item,
+                              likeCount: result.likeCount,
+                              isLiked: result.isLiked,
+                          }
+                        : item
+                )
+            );
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    'Could not update comment like.'
+                )
+            );
+            throw error;
         }
     };
 
@@ -193,7 +267,9 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                 className="fixed inset-0 bg-dark/60 backdrop-blur-sm animate-backdrop transition-opacity cursor-pointer"
             />
 
-            <div className="relative z-10 flex flex-col w-full max-w-lg max-h-[85vh] rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-modal-pop">
+            <div
+                className={`relative z-10 flex flex-col w-full ${showPostDetails ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-modal-pop`}
+            >
                 <div className="flex flex-col border-b border-border px-5 py-4 shrink-0">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
@@ -220,14 +296,59 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                         </button>
                     </div>
 
-                    {post?.title && (
+                    {showPostDetails ? (
+                        <div className="mt-4 max-h-64 overflow-y-auto rounded-xl border border-border/70 bg-background/60 p-4">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+                                <span className="font-semibold text-primary">
+                                    {post?.topic ||
+                                        'General'}
+                                </span>
+                                {(post?.author?.username ||
+                                    post?.user
+                                        ?.username) && (
+                                    <span>
+                                        · @
+                                        {post.author
+                                            ?.username ||
+                                            post.user
+                                                ?.username}
+                                    </span>
+                                )}
+                                {postDate && (
+                                    <span>
+                                        · {postDate}
+                                    </span>
+                                )}
+                            </div>
+                            <h3 className="mt-2 text-lg font-bold leading-snug text-foreground">
+                                {post?.title ||
+                                    'Untitled post'}
+                            </h3>
+                            {post?.content && (
+                                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/85">
+                                    {post.content}
+                                </p>
+                            )}
+                            <div className="mt-3 flex items-center gap-4 border-t border-border/60 pt-3 text-xs text-muted">
+                                <span>
+                                    {post?.likeCount ?? 0}{' '}
+                                    likes
+                                </span>
+                                <span>
+                                    {post?.commentCount ??
+                                        0}{' '}
+                                    comments
+                                </span>
+                            </div>
+                        </div>
+                    ) : post?.title ? (
                         <div className="mt-2 text-xs text-muted">
                             <span>On: </span>
                             <span className="font-medium text-foreground/85 line-clamp-1">
                                 &ldquo;{post.title}&rdquo;
                             </span>
                         </div>
-                    )}
+                    ) : null}
                 </div>
 
                 <CommentList
@@ -235,6 +356,7 @@ const CommentModal = ({ isOpen, onClose, post }) => {
                     currentUserId={user?._id || user?.id}
                     isLoading={isLoading}
                     onDelete={handleDeleteComment}
+                    onLike={handleLikeComment}
                     onReply={setReplyTo}
                 />
 

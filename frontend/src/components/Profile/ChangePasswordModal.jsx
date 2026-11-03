@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     X,
     KeyRound,
@@ -36,12 +36,28 @@ const ChangePasswordModal = ({
     const [showConfirmPassword, setShowConfirmPassword] =
         useState(false);
 
+    const clearForm = useCallback(() => {
+        setFormData({
+            recoveryKey: '',
+            newPassword: '',
+            confirmPassword: '',
+        });
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+    }, []);
+
+    const handleClose = useCallback(() => {
+        if (isSubmitting) return;
+        clearForm();
+        onClose?.();
+    }, [clearForm, isSubmitting, onClose]);
+
     // Close on Escape & lock body scrolling
     useEffect(() => {
         if (!isOpen) return;
 
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') onClose?.();
+            if (e.key === 'Escape') handleClose();
         };
 
         const originalOverflow =
@@ -56,7 +72,7 @@ const ChangePasswordModal = ({
                 handleKeyDown
             );
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, handleClose]);
 
     if (!isOpen) return null;
 
@@ -68,9 +84,15 @@ const ChangePasswordModal = ({
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit?.(formData);
+        if (isSubmitting) return;
+
+        const succeeded = await onSubmit?.(formData);
+        if (succeeded) {
+            clearForm();
+            onClose?.();
+        }
     };
 
     return (
@@ -81,7 +103,7 @@ const ChangePasswordModal = ({
         >
             {/* Backdrop */}
             <div
-                onClick={onClose}
+                onClick={handleClose}
                 className="fixed inset-0 bg-dark/60 backdrop-blur-sm animate-backdrop transition-opacity cursor-pointer"
             />
 
@@ -106,7 +128,7 @@ const ChangePasswordModal = ({
 
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-all hover:bg-foreground/10 hover:text-foreground hover:rotate-90 cursor-pointer"
                         aria-label="Close modal"
                     >
@@ -137,7 +159,9 @@ const ChangePasswordModal = ({
                                 type="text"
                                 value={formData.recoveryKey}
                                 onChange={handleChange}
-                                placeholder="16-character recovery key"
+                                placeholder="Enter your recovery key"
+                                autoComplete="off"
+                                required
                                 className="input-focus-effect block w-full rounded-xl border border-border bg-background/60 py-2.5 pl-10 pr-4 text-xs sm:text-sm text-foreground placeholder:text-muted/40 outline-none"
                             />
                         </div>
@@ -170,6 +194,9 @@ const ChangePasswordModal = ({
                                 value={formData.newPassword}
                                 onChange={handleChange}
                                 placeholder="••••••••"
+                                autoComplete="new-password"
+                                minLength={6}
+                                required
                                 className="input-focus-effect block w-full rounded-xl border border-border bg-background/60 py-2.5 pl-10 pr-11 text-xs sm:text-sm text-foreground placeholder:text-muted/40 outline-none"
                             />
                             <button
@@ -193,6 +220,11 @@ const ChangePasswordModal = ({
                                 )}
                             </button>
                         </div>
+                        <p className="mt-1 text-[11px] text-muted/65">
+                            Use at least 6 characters,
+                            including an uppercase letter, a
+                            lowercase letter, and a number.
+                        </p>
                     </div>
 
                     {/* Confirm Password */}
@@ -220,6 +252,9 @@ const ChangePasswordModal = ({
                                 }
                                 onChange={handleChange}
                                 placeholder="••••••••"
+                                autoComplete="new-password"
+                                minLength={6}
+                                required
                                 className="input-focus-effect block w-full rounded-xl border border-border bg-background/60 py-2.5 pl-10 pr-11 text-xs sm:text-sm text-foreground placeholder:text-muted/40 outline-none"
                             />
                             <button
@@ -249,14 +284,19 @@ const ChangePasswordModal = ({
                     <div className="mt-6 flex items-center justify-end gap-3 pt-3 border-t border-border">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="rounded-xl border border-border px-4 py-2 text-xs font-medium text-muted transition-colors hover:text-foreground hover:border-foreground/20 cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={
+                                isSubmitting ||
+                                !formData.recoveryKey.trim() ||
+                                !formData.newPassword ||
+                                !formData.confirmPassword
+                            }
                             className="btn-primary inline-flex items-center gap-1.5 rounded-xl bg-foreground px-4 py-2 text-xs font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-50 cursor-pointer"
                         >
                             <span>

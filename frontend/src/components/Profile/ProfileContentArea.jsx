@@ -1,4 +1,5 @@
-import { useState, useContext } from 'react';
+import { useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     FileText,
     MessageSquare,
@@ -6,7 +7,6 @@ import {
 } from 'lucide-react';
 import ProfileCommentCard from './ProfileCommentCard';
 import ProfileSavedCard from './ProfileSavedCard';
-import CommentModal from '../Comments/CommentModal';
 import PostContext from '../../context/postContext/postContext';
 import PostCard from '../PostCard';
 
@@ -47,24 +47,47 @@ const ProfileContentArea = ({
     comments = [],
     saved: propSaved,
     onLike,
-    onComment,
     onSave,
     onShare,
     onDelete,
     showDelete,
 }) => {
     const postContext = useContext(PostContext);
-    const [activeCommentPost, setActiveCommentPost] =
-        useState(null);
-
+    const navigate = useNavigate();
+    const location = useLocation();
     // Fall back to PostContext if not explicitly provided
     const posts = propPosts ?? postContext?.userPosts ?? [];
     const saved =
         propSaved ?? postContext?.savedPosts ?? [];
 
-    const handleComment = (post) => {
-        setActiveCommentPost(post);
-        onComment?.(post);
+    const handleOpenCommentPost = (comment) => {
+        const commentPost = comment?.post;
+        const postId =
+            typeof commentPost === 'object'
+                ? commentPost?._id || commentPost?.id
+                : commentPost;
+
+        if (!postId) return;
+
+        const fullPost = [
+            ...(postContext?.allPosts || []),
+            ...(postContext?.userPosts || []),
+        ].find(
+            (post) =>
+                String(post?._id || post?.id) ===
+                String(postId)
+        );
+
+        navigate(`/posts/${postId}`, {
+            state: {
+                post:
+                    fullPost ||
+                    (typeof commentPost === 'object'
+                        ? commentPost
+                        : null),
+                from: location.pathname,
+            },
+        });
     };
 
     /* ── Decide which list + card to render ── */
@@ -108,42 +131,45 @@ const ProfileContentArea = ({
 
     /* ── Item list ── */
     return (
-        <>
-            <div className="flex flex-col gap-3 animate-slide-up">
-                {items.map((item, index) => {
-                    const key =
-                        item._id || item.id || index;
+        <div className="flex flex-col gap-3 animate-slide-up">
+            {items.map((item, index) => {
+                const key = item._id || item.id || index;
 
-                    if (activeTab === 'comments') {
-                        return (
-                            <CardComponent
-                                key={key}
-                                comment={item}
-                            />
-                        );
-                    }
+                if (activeTab === 'comments') {
                     return (
                         <CardComponent
                             key={key}
-                            post={item}
-                            onLike={onLike}
-                            onComment={handleComment}
-                            onSave={onSave}
-                            onShare={onShare}
-                            onDelete={onDelete}
-                            showDelete={showDelete}
+                            comment={item}
+                            onClick={() =>
+                                handleOpenCommentPost(item)
+                            }
                         />
                     );
-                })}
-            </div>
+                }
 
-            {/* ── Animated Comment Popup Modal ── */}
-            <CommentModal
-                isOpen={!!activeCommentPost}
-                post={activeCommentPost}
-                onClose={() => setActiveCommentPost(null)}
-            />
-        </>
+                return (
+                    <CardComponent
+                        key={key}
+                        post={item}
+                        onLike={onLike}
+                        onSave={onSave}
+                        onShare={onShare}
+                        onDelete={onDelete}
+                        showDelete={showDelete}
+                        onClick={
+                            activeTab === 'saved'
+                                ? () =>
+                                      handleOpenCommentPost(
+                                          {
+                                              post: item,
+                                          }
+                                      )
+                                : undefined
+                        }
+                    />
+                );
+            })}
+        </div>
     );
 };
 

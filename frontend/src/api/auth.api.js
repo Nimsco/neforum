@@ -35,9 +35,33 @@ const logoutUser = async (accessToken) => {
     return response.data.data;
 };
 
+const changeUserPassword = async (
+    accessToken,
+    recoveryKey,
+    newPassword,
+    confirmNewPassword
+) => {
+    const response = await api.patch(
+        '/users/me/password',
+        {
+            recoveryKey,
+            newPassword,
+            confirmNewPassword,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+
+    return response.data.data;
+};
+
 export {
     registerUser,
     loginUser,
     refreshAccessToken,
     logoutUser,
+    changeUserPassword,
 };

@@ -11,9 +11,12 @@ import AnimatedBackground from './AnimatedBackground';
  * - Background: Floating anonymous visual elements + omnidirectional wandering hood
  */
 
-const AuthLayout = ({ children }) => {
+const AuthLayout = ({ children, onBeforeNavigate }) => {
     const { pathname } = useLocation();
     const isLogin = pathname === '/login';
+    const handleNavigation = (event) => {
+        onBeforeNavigate?.(event);
+    };
 
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-background px-4 sm:px-6 lg:px-12 py-10 selection:bg-primary/20 overflow-x-hidden">
@@ -26,6 +29,7 @@ const AuthLayout = ({ children }) => {
                 <div className="flex flex-col items-center justify-center flex-1 text-center animate-slide-down">
                     <Link
                         to="/"
+                        onClick={handleNavigation}
                         className="logo-hover group relative flex items-center justify-center outline-none transition-transform duration-300 hover:scale-105"
                         aria-label="NEForum Home"
                     >
@@ -59,6 +63,7 @@ const AuthLayout = ({ children }) => {
                     >
                         <Link
                             to="/login"
+                            onClick={handleNavigation}
                             className={`flex-1 text-center rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
                                 isLogin
                                     ? 'bg-primary text-white shadow-sm'
@@ -69,6 +74,7 @@ const AuthLayout = ({ children }) => {
                         </Link>
                         <Link
                             to="/register"
+                            onClick={handleNavigation}
                             className={`flex-1 text-center rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
                                 !isLogin
                                     ? 'bg-primary text-white shadow-sm'

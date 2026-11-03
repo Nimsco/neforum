@@ -22,6 +22,7 @@ const CommentComposer = ({
         replyTo?.user?.username ||
         replyTo?.author?.username ||
         'Anonymous';
+    const replyPreview = replyTo?.content?.trim();
 
     return (
         <form
@@ -29,15 +30,24 @@ const CommentComposer = ({
             className="shrink-0 border-t border-border bg-card/60 p-4"
         >
             {replyTo && (
-                <div className="mb-2 flex items-center justify-between text-xs text-muted">
-                    <span>Replying to {replyAuthor}</span>
-                    <button
-                        type="button"
-                        onClick={onCancelReply}
-                        className="cursor-pointer hover:text-foreground"
-                    >
-                        Cancel
-                    </button>
+                <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted">
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-primary">
+                            Replying to {replyAuthor}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={onCancelReply}
+                            className="shrink-0 cursor-pointer hover:text-foreground"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    {replyPreview && (
+                        <p className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-foreground/80">
+                            {replyPreview}
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -80,7 +90,9 @@ const CommentComposer = ({
                             <span>
                                 {isPosting
                                     ? 'Posting...'
-                                    : 'Reply'}
+                                    : replyTo
+                                      ? 'Reply'
+                                      : 'Comment'}
                             </span>
                         </button>
                     </div>

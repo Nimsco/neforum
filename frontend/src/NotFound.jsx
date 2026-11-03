@@ -3,7 +3,7 @@ import { SearchX, Home } from 'lucide-react';
 
 const NotFound = () => {
     return (
-        <div className="min-h-screen bg-page flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
             <div className="text-center flex flex-col items-center gap-6 max-w-lg">
                 {/* Animated Icon */}
                 <div className="relative">
@@ -18,10 +18,10 @@ const NotFound = () => {
 
                 {/* Text Content */}
                 <div className="space-y-2">
-                    <h1 className="text-7xl font-bold text-heading tracking-tighter">
+                    <h1 className="text-7xl font-bold text-foreground tracking-tighter">
                         404
                     </h1>
-                    <h2 className="text-2xl sm:text-3xl font-semibold text-heading">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
                         Page Not Found
                     </h2>
                     <p className="text-muted text-base mt-2">

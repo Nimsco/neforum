@@ -1,8 +1,7 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, PenLine } from 'lucide-react';
 import PostCard from '../PostCard';
-import CommentModal from '../Comments/CommentModal';
 import PostContext from '../../context/postContext/postContext';
 
 /**
@@ -19,12 +18,32 @@ const ConversationFeed = () => {
         useContext(PostContext);
 
     const [activeTab, setActiveTab] = useState('Trending');
-    const [activeCommentPost, setActiveCommentPost] =
-        useState(null);
+    const visiblePosts = useMemo(() => {
+        if (activeTab === 'Unanswered') {
+            return allPosts.filter(
+                (post) =>
+                    (post.commentCount ??
+                        post.replies ??
+                        0) === 0
+            );
+        }
 
-    const handleComment = (post) => {
-        setActiveCommentPost(post);
-    };
+        return [...allPosts].sort((left, right) => {
+            if (activeTab === 'Trending') {
+                const likes =
+                    (right.likeCount ??
+                        right.upvotes ??
+                        0) -
+                    (left.likeCount ?? left.upvotes ?? 0);
+                if (likes !== 0) return likes;
+            }
+
+            return (
+                new Date(right.createdAt || 0) -
+                new Date(left.createdAt || 0)
+            );
+        });
+    }, [activeTab, allPosts]);
 
     return (
         <section className="pt-6">
@@ -65,7 +84,7 @@ const ConversationFeed = () => {
                 <div className="flex min-h-50 items-center justify-center py-12">
                     <span className="block h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
-            ) : allPosts.length === 0 ? (
+            ) : visiblePosts.length === 0 ? (
                 /* Empty state when no posts are available */
                 <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-14 px-4 text-center">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground/5 text-muted mb-3">
@@ -75,9 +94,9 @@ const ConversationFeed = () => {
                         No conversations yet
                     </h4>
                     <p className="mt-1 max-w-sm text-xs text-muted">
-                        There are no posts here right now.
-                        Be the first to start a conversation
-                        in the community.
+                        {activeTab === 'Unanswered'
+                            ? 'Every conversation has a reply so far.'
+                            : 'There are no posts here right now. Be the first to start a conversation in the community.'}
                     </p>
                     <Link
                         to="/create-post"
@@ -90,23 +109,15 @@ const ConversationFeed = () => {
             ) : (
                 /* Post cards list */
                 <div className="mt-4 flex flex-col gap-3">
-                    {allPosts.map((post) => (
+                    {visiblePosts.map((post) => (
                         <PostCard
                             key={post._id || post.id}
                             post={post}
-                            onComment={handleComment}
                             showDelete={false}
                         />
                     ))}
                 </div>
             )}
-
-            {/* ── Animated Comment Popup Modal ── */}
-            <CommentModal
-                isOpen={!!activeCommentPost}
-                post={activeCommentPost}
-                onClose={() => setActiveCommentPost(null)}
-            />
         </section>
     );
 };

@@ -43,25 +43,24 @@ const CommentItem = ({
     onDelete,
     showDelete = false,
 }) => {
-    const [isLiked, setIsLiked] = useState(
-        comment?.isLiked || false
-    );
-    const [likeCount, setLikeCount] = useState(
-        comment?.likeCount || 0
-    );
+    const isLiked = Boolean(comment?.isLiked);
+    const likeCount = comment?.likeCount ?? 0;
+    const [isLiking, setIsLiking] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
-    const handleLikeClick = (e) => {
+    const handleLikeClick = async (e) => {
         e.stopPropagation();
-        const nextLiked = !isLiked;
-        setIsLiked(nextLiked);
-        setLikeCount((prev) =>
-            nextLiked ? prev + 1 : Math.max(0, prev - 1)
-        );
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 500);
-
-        onLike?.(comment);
+        if (isLiking || !onLike) return;
+        setIsLiking(true);
+        try {
+            await onLike(comment, !isLiked);
+            setIsAnimating(true);
+            setTimeout(() => setIsAnimating(false), 500);
+        } catch {
+            // The parent displays the API error.
+        } finally {
+            setIsLiking(false);
+        }
     };
 
     const authorName =
@@ -121,6 +120,7 @@ const CommentItem = ({
                     <button
                         type="button"
                         onClick={handleLikeClick}
+                        disabled={isLiking}
                         className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium transition-colors cursor-pointer ${
                             isLiked
                                 ? 'text-red-500 bg-red-500/10'
@@ -138,16 +138,20 @@ const CommentItem = ({
                         <span>{likeCount}</span>
                     </button>
 
-                    {/* Reply button */}
-                    <button
-                        type="button"
-                        onClick={() => onReply?.(comment)}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary cursor-pointer"
-                        aria-label="Reply to comment"
-                    >
-                        <Reply className="h-3 w-3" />
-                        <span>Reply</span>
-                    </button>
+                    {/* Replies can only target top-level comments. */}
+                    {!isReply && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                onReply?.(comment)
+                            }
+                            className="inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary cursor-pointer"
+                            aria-label="Reply to comment"
+                        >
+                            <Reply className="h-3 w-3" />
+                            <span>Reply</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
