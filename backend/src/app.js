@@ -5,13 +5,8 @@ import errorHandler from './middlewares/error.middleware.js';
 
 const app = express();
 const allowedOrigins = [
-    ...(process.env.CLIENT_URL || '')
-        .split(',')
-        .map((origin) => origin.trim())
-        .filter(Boolean),
     'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://192.168.1.66:5173',
+    'https://neforum.vercel.app',
 ];
 
 app.use(express.json({ limit: '16kb' }));
@@ -28,11 +23,9 @@ app.use(
                 allowedOrigins.includes(origin)
             ) {
                 callback(null, true);
-                return;
+            } else {
+                callback(new Error('Not allowed by CORS'));
             }
-            callback(
-                new Error('Origin is not allowed by CORS.')
-            );
         },
         credentials: true,
         methods: [
@@ -59,5 +52,13 @@ app.use('/api/v1/posts', postRoutes);
 
 //error handler
 app.use(errorHandler);
+
+//health
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'NeForum API is running',
+    });
+});
 
 export default app;

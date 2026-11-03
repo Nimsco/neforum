@@ -43,27 +43,28 @@ const registerUser = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
     const accessToken = generateAccessToken(user);
 
-    return res
-        .status(201)
-        .cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-        })
-        .json(
-            new ApiResponse(
-                201,
-                {
-                    user: {
-                        id: user._id,
-                        username: user.username,
-                        recoveryKey,
-                    },
-                    accessToken,
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite:
+            process.env.NODE_ENV === 'production'
+                ? 'none'
+                : 'strict',
+        path: '/',
+    }).json(
+        new ApiResponse(
+            201,
+            {
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    recoveryKey,
                 },
-                'User registered successfully'
-            )
-        );
+                accessToken,
+            },
+            'User registered successfully'
+        )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
