@@ -1,16 +1,16 @@
+import { randomBytes } from 'node:crypto';
 import { ApiError } from './ApiError.js';
 
 const generateRecoveryKey = (length) => {
     try {
-        let hexString = '';
-        while (hexString.length < length) {
-            // Generate a random 32-bit integer and convert it to base-16
-            hexString += Math.floor(
-                Math.random() * 0xffffffff
-            ).toString(16);
+        if (!Number.isInteger(length) || length < 1) {
+            throw new Error(
+                'Recovery key length must be positive.'
+            );
         }
-        // Trim to the precise requested length
-        return hexString.substring(0, length);
+        return randomBytes(Math.ceil(length / 2))
+            .toString('hex')
+            .slice(0, length);
     } catch (error) {
         throw new ApiError(
             error.statusCode || 500,

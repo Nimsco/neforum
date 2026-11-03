@@ -1,6 +1,5 @@
 import {
     MessageCircle,
-    User,
     Hash,
     AtSign,
     Eye,

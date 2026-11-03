@@ -33,6 +33,8 @@ const ProfileHeader = ({
     user,
     postCount,
     commentCount,
+    likeCount,
+    savedCount,
     onChangePassword,
     onLogout,
 }) => {
@@ -114,15 +116,22 @@ const ProfileHeader = ({
             </div>
 
             {/* Stats row */}
-            <div className="mt-6 flex items-center justify-center sm:justify-start gap-8 border-t border-border pt-5">
+            <div className="mt-6 grid grid-cols-4 items-center border-t border-border pt-5">
                 <StatBadge
                     label="Posts"
                     value={postCount}
                 />
-                <div className="h-8 w-px bg-border" />
                 <StatBadge
                     label="Comments"
                     value={commentCount}
+                />
+                <StatBadge
+                    label="Likes given"
+                    value={likeCount}
+                />
+                <StatBadge
+                    label="Saved"
+                    value={savedCount}
                 />
             </div>
         </div>

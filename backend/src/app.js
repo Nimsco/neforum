@@ -4,6 +4,15 @@ import cookieParser from 'cookie-parser';
 import errorHandler from './middlewares/error.middleware.js';
 
 const app = express();
+const allowedOrigins = [
+    ...(process.env.CLIENT_URL || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://192.168.1.66:5173',
+];
 
 app.use(express.json({ limit: '16kb' }));
 app.use(
@@ -13,7 +22,18 @@ app.use(cookieParser());
 
 app.use(
     cors({
-        origin: ['http://192.168.1.66:5173'],
+        origin: (origin, callback) => {
+            if (
+                !origin ||
+                allowedOrigins.includes(origin)
+            ) {
+                callback(null, true);
+                return;
+            }
+            callback(
+                new Error('Origin is not allowed by CORS.')
+            );
+        },
         credentials: true,
         methods: [
             'GET',

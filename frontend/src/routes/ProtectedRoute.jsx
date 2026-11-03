@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import UserContext from '../context/userContext/userContext';
 import { Navigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 const ProtectedRoute = () => {
     const { user, isAuthLoading } = useContext(UserContext);
@@ -10,7 +11,7 @@ const ProtectedRoute = () => {
     // if (!user) return <Navigate to="/login" replace />;
 
     if (isAuthLoading) {
-        return <h2>Loading...</h2>;
+        return <LoadingScreen fullHeight />;
     }
 
     if (!user) {

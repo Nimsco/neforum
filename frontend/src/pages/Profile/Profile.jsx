@@ -6,8 +6,15 @@ import ChangePasswordModal from '../../components/Profile/ChangePasswordModal';
 import UserContext from '../../context/userContext/userContext';
 import PostContext from '../../context/postContext/postContext';
 import { toast } from 'react-toastify';
-import { logoutUser } from '../../api/auth.api';
-import { getCurrentUser } from '../../api/user.api';
+import {
+    logoutUser,
+    changeUserPassword,
+} from '../../api/auth.api';
+import {
+    getCurrentUser,
+    fetchUserStats,
+    fetchUserComments,
+} from '../../api/user.api';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import getErrorMessage from '../../utils/getErrorMessage';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +29,8 @@ const Profile = () => {
 
     const [showLogoutPopup, setShowLogoutPopup] =
         useState(false);
+    const [isChangingPassword, setIsChangingPassword] =
+        useState(false);
 
     const { user, isAuthLoading, resetUser } =
         useContext(UserContext);
@@ -30,32 +39,78 @@ const Profile = () => {
         useContext(PostContext);
 
     const [currentUser, setCurrentUser] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [comments, setComments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
 
-    const comments = [];
-
     useEffect(() => {
         if (isAuthLoading || !user?.accessToken) return;
 
-        const fetchUser = async () => {
-            try {
-                const response = await getCurrentUser(
-                    user.accessToken
-                );
-                setCurrentUser(response.user);
-            } catch (error) {
+        let cancelled = false;
+
+        const loadProfile = async () => {
+            const results = await Promise.allSettled([
+                getCurrentUser(user.accessToken),
+                fetchUserStats(user.accessToken),
+                fetchUserComments(user.accessToken),
+            ]);
+
+            if (cancelled) return;
+
+            const [
+                userResult,
+                statsResult,
+                commentsResult,
+            ] = results;
+
+            if (userResult.status === 'fulfilled') {
+                setCurrentUser(userResult.value.user);
+            } else {
+                setCurrentUser(null);
                 toast.error(
-                    error.response?.data?.message ||
+                    getErrorMessage(
+                        userResult.reason,
                         'Failed to fetch user.'
+                    )
                 );
-            } finally {
-                setIsLoading(false);
             }
+
+            if (statsResult.status === 'fulfilled') {
+                setStats(statsResult.value);
+            } else {
+                setStats(null);
+                toast.error(
+                    getErrorMessage(
+                        statsResult.reason,
+                        'Failed to fetch profile stats.'
+                    )
+                );
+            }
+
+            if (commentsResult.status === 'fulfilled') {
+                const list = commentsResult.value?.comments;
+                setComments(
+                    Array.isArray(list) ? list : []
+                );
+            } else {
+                setComments([]);
+                toast.error(
+                    getErrorMessage(
+                        commentsResult.reason,
+                        'Failed to fetch your comments.'
+                    )
+                );
+            }
+
+            setIsLoading(false);
         };
 
-        fetchUser();
+        loadProfile();
+        return () => {
+            cancelled = true;
+        };
     }, [user?.accessToken, isAuthLoading]);
 
     const handleDeletePost = (post) => {
@@ -104,8 +159,39 @@ const Profile = () => {
         }
     };
 
-    const handleChangePasswordSubmit = (_formData) => {
-        // Ready for your change password logic
+    const handleChangePasswordSubmit = async ({
+        recoveryKey,
+        newPassword,
+        confirmPassword,
+    }) => {
+        if (isChangingPassword) return false;
+
+        if (newPassword !== confirmPassword) {
+            toast.error('New passwords do not match.');
+            return false;
+        }
+
+        setIsChangingPassword(true);
+        try {
+            await changeUserPassword(
+                user.accessToken,
+                recoveryKey.trim(),
+                newPassword,
+                confirmPassword
+            );
+            toast.success('Password changed successfully.');
+            return true;
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    'Could not change your password.'
+                )
+            );
+            return false;
+        } finally {
+            setIsChangingPassword(false);
+        }
     };
 
     if (isAuthLoading || isLoading) {
@@ -121,8 +207,10 @@ const Profile = () => {
             <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6">
                 <ProfileHeader
                     user={currentUser}
-                    postCount={userPosts.length}
-                    commentCount={comments.length}
+                    postCount={stats?.postCount}
+                    commentCount={stats?.commentCount}
+                    likeCount={stats?.likeCount}
+                    savedCount={savedPosts.length}
                     onChangePassword={() =>
                         setIsChangePasswordOpen(true)
                     }
@@ -154,6 +242,7 @@ const Profile = () => {
                     setIsChangePasswordOpen(false)
                 }
                 onSubmit={handleChangePasswordSubmit}
+                isSubmitting={isChangingPassword}
             />
 
             {postToDelete && (

@@ -63,12 +63,6 @@ const Login = () => {
 
             navigate('/');
         } catch (error) {
-            console.log('Full error:', error);
-            console.log(
-                'Backend response:',
-                error.response?.data
-            );
-
             toast.error(
                 getErrorMessage(error, 'Login failed.')
             );

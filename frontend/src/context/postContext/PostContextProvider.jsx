@@ -13,6 +13,8 @@ import {
     deletePost as deletePostAPi,
     likePost as likePostApi,
     unlikePost as unlikePostApi,
+    savePost as savePostApi,
+    unsavePost as unsavePostApi,
 } from '../../api/post.api.js';
 import { toast } from 'react-toastify';
 import getErrorMessage from '../../utils/getErrorMessage.js';
@@ -303,15 +305,43 @@ const PostContextProvider = ({ children }) => {
     // ───────────────────────────────────────
     // Save / unsave a post (local toggle)
     // ───────────────────────────────────────
-    const savePost = (postId) => {
-        const toggle = (list) =>
-            list.map((p) => {
-                if ((p._id || p.id) !== postId) return p;
-                return { ...p, isSaved: !p.isSaved };
-            });
+    const savePost = async (postId) => {
+        const post =
+            allPosts.find(
+                (item) => (item._id || item.id) === postId
+            ) ||
+            userPosts.find(
+                (item) => (item._id || item.id) === postId
+            );
+        if (!post || !user?.accessToken) return;
 
-        setAllPosts(toggle);
-        setUserPosts(toggle);
+        const nextIsSaved = !post.isSaved;
+        try {
+            if (nextIsSaved) {
+                await savePostApi(postId, user.accessToken);
+            } else {
+                await unsavePostApi(
+                    postId,
+                    user.accessToken
+                );
+            }
+
+            const update = (list) =>
+                list.map((item) =>
+                    (item._id || item.id) === postId
+                        ? { ...item, isSaved: nextIsSaved }
+                        : item
+                );
+            setAllPosts(update);
+            setUserPosts(update);
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    'Could not update saved post.'
+                )
+            );
+        }
     };
 
     // Keep comment totals current on feed and profile post cards.

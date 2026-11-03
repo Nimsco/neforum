@@ -11,6 +11,16 @@ const getPosts = async (accessToken) => {
     return response.data.data;
 };
 
+const getPostById = async (accessToken, postId) => {
+    const response = await api.get(`/posts/${postId}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    return response.data.data.post;
+};
+
 // 2. Create a post
 const createPost = async (postData, accessToken) => {
     const response = await api.post('/posts', postData, {
@@ -59,6 +69,56 @@ const unlikePost = async (postId, accessToken) => {
         }
     );
 
+    return response.data.data;
+};
+
+const savePost = async (postId, accessToken) => {
+    const response = await api.post(
+        `/posts/${postId}/saves`,
+        {},
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+    return response.data.data;
+};
+
+const unsavePost = async (postId, accessToken) => {
+    const response = await api.delete(
+        `/posts/${postId}/saves`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+    return response.data.data;
+};
+
+const likeComment = async (commentId, accessToken) => {
+    const response = await api.post(
+        `/posts/comments/${commentId}/likes`,
+        {},
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+    return response.data.data;
+};
+
+const unlikeComment = async (commentId, accessToken) => {
+    const response = await api.delete(
+        `/posts/comments/${commentId}/likes`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
     return response.data.data;
 };
 
@@ -133,10 +193,15 @@ const fetchPostsComments = async (accessToken, postId) => {
 
 export {
     getPosts,
+    getPostById,
     createPost,
     deletePost,
     likePost,
     unlikePost,
+    savePost,
+    unsavePost,
+    likeComment,
+    unlikeComment,
     createComment,
     deleteComment,
     updateComment,

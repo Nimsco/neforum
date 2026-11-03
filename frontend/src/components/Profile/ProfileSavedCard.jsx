@@ -14,7 +14,7 @@ import {
  * @param {object} post — { _id, title, content, likeCount, commentCount, createdAt }
  */
 
-const ProfileSavedCard = ({ post }) => {
+const ProfileSavedCard = ({ post, onClick }) => {
     const timeAgo = post?.createdAt
         ? new Date(post.createdAt).toLocaleDateString(
               'en-US',
@@ -26,7 +26,21 @@ const ProfileSavedCard = ({ post }) => {
         : '';
 
     return (
-        <div className="w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+        <div
+            onClick={onClick}
+            onKeyDown={(event) => {
+                if (
+                    event.key === 'Enter' ||
+                    event.key === ' '
+                ) {
+                    event.preventDefault();
+                    onClick?.();
+                }
+            }}
+            role={onClick ? 'link' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            className={`w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md ${onClick ? 'cursor-pointer hover:border-primary/30' : ''}`}
+        >
             {/* Saved badge */}
             <div className="mb-2 flex items-center gap-1 text-xs text-primary font-medium">
                 <BookmarkCheck className="h-3.5 w-3.5" />
