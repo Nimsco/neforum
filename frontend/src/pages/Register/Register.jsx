@@ -61,6 +61,19 @@ const Register = () => {
             return;
         }
 
+        if (username.includes(' ')) {
+            toast.error('Username cannot contain spaces.');
+            return;
+        }
+
+        if (
+            password.includes(' ') ||
+            confirmPassword.includes(' ')
+        ) {
+            toast.error('Passwords cannot contain spaces.');
+            return;
+        }
+
         if (isSubmitting) return;
 
         setIsSubmitting(true);

@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
     Home,
-    Bookmark,
     Clock,
     GraduationCap,
     Briefcase,
@@ -28,7 +27,6 @@ import {
 
 const navItems = [
     { icon: Home, label: 'Home', to: '/', current: true },
-    { icon: Bookmark, label: 'Saved', to: '/saved' },
     {
         icon: Clock,
         label: 'Recently viewed',

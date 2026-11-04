@@ -57,19 +57,32 @@ const CommentComposer = ({
                     onChange={(event) =>
                         setContent(event.target.value)
                     }
+                    onKeyDown={(event) => {
+                        if (
+                            event.key === 'Enter' &&
+                            !event.shiftKey &&
+                            !event.nativeEvent.isComposing
+                        ) {
+                            event.preventDefault();
+                            event.currentTarget.form?.requestSubmit();
+                        }
+                    }}
                     placeholder="Write an anonymous comment..."
                     maxLength={1000}
                     rows={2}
                     className="input-focus-effect block w-full resize-none rounded-xl border border-border bg-background/80 px-3.5 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted/50 outline-none leading-relaxed"
                 />
 
-                <div className="mt-2 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted">
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                    <div className="flex min-w-0 flex-1 items-center gap-1.5 text-[10px] leading-4 text-muted sm:text-[11px]">
                         <Shield className="h-3 w-3 text-success" />
-                        <span>Posting anonymously</span>
+                        <span>
+                            Posting anonymously · Enter to
+                            send, Shift+Enter for newline
+                        </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="ml-auto flex shrink-0 items-center gap-2">
                         <span
                             className={`text-[11px] ${
                                 content.length > 950

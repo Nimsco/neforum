@@ -305,6 +305,42 @@ body {
     }
 }
 
+@keyframes not-found-orbit {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+@keyframes not-found-signal {
+    0%,
+    100% {
+        opacity: 0.12;
+        transform: scale(0.72);
+    }
+    50% {
+        opacity: 0.55;
+        transform: scale(1);
+    }
+}
+
+.not-found-orbit {
+    animation: not-found-orbit 42s linear infinite;
+}
+
+.not-found-signal-square {
+    opacity: 0.12;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: not-found-signal 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .not-found-orbit,
+    .not-found-signal-square {
+        animation: none;
+    }
+}
+
 /* ─── Utility classes for animations ─────────────────────────────── */
 .animate-drift {
     animation: drift var(--drift-duration, 8s) ease-in-out
