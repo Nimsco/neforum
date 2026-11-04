@@ -8,6 +8,7 @@ import {
     EyeOff,
     ArrowRight,
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 /**
  * ChangePasswordModal
@@ -87,6 +88,16 @@ const ChangePasswordModal = ({
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
+        if (
+            formData.recoveryKey.includes(' ') ||
+            formData.newPassword.includes(' ') ||
+            formData.confirmPassword.includes(' ')
+        ) {
+            toast.error(
+                'Recovery key or passwords cannot have spaces in them.'
+            );
+            return;
+        }
 
         const succeeded = await onSubmit?.(formData);
         if (succeeded) {

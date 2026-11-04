@@ -14,6 +14,15 @@ const validatePassword = (password, confirmPassword) => {
         throw new ApiError(400, 'Passwords do not match');
     }
 
+    if (
+        password.includes(' ') ||
+        confirmPassword.includes(' ')
+    ) {
+        throw new ApiError(
+            'Passwords cannot contain spaces in them.'
+        );
+    }
+
     if (password.length < 6) {
         throw new ApiError(
             400,
@@ -48,6 +57,13 @@ const validateNewPassword = (password) => {
         throw new ApiError(400, 'Password is required.');
     }
 
+    if (password.includes(' ')) {
+        throw new ApiError(
+            400,
+            'Password cannot contain any spaces between them.'
+        );
+    }
+
     if (password.length < 6) {
         throw new ApiError(
             400,
@@ -80,6 +96,13 @@ const validateNewPassword = (password) => {
 const validateUsername = async (inputUsername) => {
     if (typeof inputUsername !== 'string') {
         throw new ApiError(400, 'Username is required.');
+    }
+
+    if (inputUsername.includes(' ')) {
+        throw new ApiError(
+            400,
+            'Username cannot contain any spaces.'
+        );
     }
 
     const user = await User.findOne({

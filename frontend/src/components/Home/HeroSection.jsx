@@ -38,12 +38,6 @@ const HeroSection = () => {
                     <PenLine className="h-4 w-4" />
                     New post
                 </Link>
-
-                {/* quiet live presence, no pinging */}
-                <span className="inline-flex items-center gap-2 text-xs text-muted">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                    286 minds here right now
-                </span>
             </div>
         </section>
     );

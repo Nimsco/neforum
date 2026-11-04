@@ -32,6 +32,7 @@ const CreatePostEditor = ({
                     id="post-title"
                     name="title"
                     type="text"
+                    autoFocus
                     value={title}
                     onChange={handleTitleChange}
                     placeholder="What's on your mind?"
@@ -68,9 +69,23 @@ const CreatePostEditor = ({
                     placeholder="Elaborate on your thoughts..."
                     maxLength={3000}
                     rows={10}
+                    onKeyDown={(event) => {
+                        if (
+                            event.key === 'Enter' &&
+                            !event.shiftKey &&
+                            !event.nativeEvent.isComposing
+                        ) {
+                            event.preventDefault();
+                            event.currentTarget.form?.requestSubmit();
+                        }
+                    }}
                     className="input-focus-effect block w-full resize-none rounded-xl border border-border bg-background/60 px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-muted/40 outline-none"
                 />
-                <div className="mt-1.5 flex justify-end">
+                <div className="mt-1.5 flex items-center justify-between gap-3">
+                    <span className="text-xs text-muted/60">
+                        Enter to publish · Shift+Enter for a
+                        new line
+                    </span>
                     <span
                         className={`text-xs ${
                             content.length > 2900
