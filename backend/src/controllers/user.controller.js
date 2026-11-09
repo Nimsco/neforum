@@ -20,6 +20,21 @@ import Like from '../models/like.model.js';
 import CommentLike from '../models/commentLike.model.js';
 import SavedPost from '../models/savedPost.model.js';
 
+const getRefreshCookieOptions = (req) => {
+    const isSecureRequest =
+        process.env.NODE_ENV === 'production' ||
+        req.secure ||
+        req.get('x-forwarded-proto') === 'https' ||
+        req.get('origin')?.startsWith('https://');
+
+    return {
+        httpOnly: true,
+        secure: isSecureRequest,
+        sameSite: isSecureRequest ? 'none' : 'strict',
+        path: '/',
+    };
+};
+
 const registerUser = asyncHandler(async (req, res) => {
     const { username, password, confirmPassword } =
         req.body;
@@ -43,15 +58,11 @@ const registerUser = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
     const accessToken = generateAccessToken(user);
 
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite:
-            process.env.NODE_ENV === 'production'
-                ? 'none'
-                : 'strict',
-        path: '/',
-    }).json(
+    res.cookie(
+        'refreshToken',
+        refreshToken,
+        getRefreshCookieOptions(req)
+    ).json(
         new ApiResponse(
             201,
             {
@@ -104,11 +115,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-        })
+        .cookie(
+            'refreshToken',
+            refreshToken,
+            getRefreshCookieOptions(req)
+        )
         .json(
             new ApiResponse(
                 200,
@@ -137,15 +148,12 @@ const logoutUser = asyncHandler(async (req, res) => {
         }
     );
 
-    const options = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-    };
-
     return res
         .status(200)
-        .clearCookie('refreshToken', options)
+        .clearCookie(
+            'refreshToken',
+            getRefreshCookieOptions(req)
+        )
         .json(
             new ApiResponse(
                 200,
