@@ -6,6 +6,8 @@ import errorHandler from './middlewares/error.middleware.js';
 const app = express();
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://192.168.1.67:5173',
+    'https://192.168.1.67:5173',
     'https://neforum.vercel.app',
 ];
 
