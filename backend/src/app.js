@@ -9,6 +9,8 @@ const allowedOrigins = [
     'http://192.168.1.67:5173',
     'https://192.168.1.67:5173',
     'https://neforum.vercel.app',
+    'https://neforum.site',
+    'https://www.neforum.site',
 ];
 
 app.use(express.json({ limit: '16kb' }));
